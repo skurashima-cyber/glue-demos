@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>ヒトラボエージェント様｜求人サイト 実現イメージ（エリア／表示項目／検索／デザイン方向性）</title>
+<style>
+/* =========================================================
+   ヒトラボエージェント様 求人サイト 実現イメージ
+   デザイントークンは デモv1.0 (glue-demos/hitolabo-agent) と共通
+   ========================================================= */
+:root{
+  --brand:#2bb673; --brand-d:#1f9d61; --brand-50:#eafaf2;
+  --accent:#ff8a3d; --ink:#1f2d3d; --ink-2:#54657a; --mute:#8a99ad;
+  --line:#e6ecf2; --bg:#f5f8fa; --card:#fff;
+  --ok:#1b8a4b; --warn:#c47d04; --err:#ba0517;
+  --list:#1b8a4b;      /* 一覧＋詳細 */
+  --det:#1c61c4;       /* 詳細のみ */
+  --int:#8a99ad;       /* 内部のみ */
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
+     background:var(--bg);color:var(--ink);font-size:14px;line-height:1.65}
+a{color:inherit}
+
+/* ---- ヘッダー / タブ ---- */
+.doc-head{background:#0e1726;color:#fff;padding:16px 24px 0}
+.doc-head .t{font-weight:800;font-size:16px}
+.doc-head .t b{color:var(--brand)}
+.doc-head .s{font-size:12px;color:#8595a8;margin:4px 0 14px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{border:0;background:#1d2a3d;color:#a9b6c7;font-family:inherit;font-weight:700;font-size:13px;
+  padding:10px 16px;border-radius:9px 9px 0 0;cursor:pointer;transition:.15s}
+.tabs button:hover{color:#fff}
+.tabs button.on{background:var(--bg);color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 20px 80px}
+.tabpane{display:none}.tabpane.on{display:block}
+
+/* ---- 共通パーツ ---- */
+h1.q{font-size:21px;margin:0 0 6px}
+.qsub{color:var(--ink-2);font-size:13.5px;margin:0 0 18px}
+.ans{background:#fff;border:1px solid var(--line);border-left:5px solid var(--brand);border-radius:12px;
+     padding:16px 20px;margin:0 0 22px}
+.ans .lbl{font-size:11px;font-weight:800;color:var(--brand-d);letter-spacing:.06em;margin-bottom:4px}
+.ans p{margin:0;font-size:14.5px}
+.ans p+p{margin-top:8px}
+.quote{background:#fff8ec;border:1px solid #f5dfbc;border-radius:10px;padding:12px 15px;margin:0 0 18px;font-size:13px}
+.quote .who{font-size:11px;font-weight:800;color:var(--warn);letter-spacing:.05em;margin-bottom:3px}
+.sec{margin:30px 0 12px;display:flex;align-items:center;gap:9px}
+.sec h2{font-size:16.5px;margin:0}
+.sec .num{width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-size:12px;
+  font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.note{background:#f1edff;border:1px solid #c9bcff;border-radius:10px;padding:12px 15px;font-size:13px;margin:14px 0}
+.note b{color:#5a3fd0}
+.warnbox{background:#fff1f0;border:1px solid #f6c9c5;border-radius:10px;padding:12px 15px;font-size:13px;margin:14px 0}
+.warnbox b{color:var(--err)}
+
+table.d{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);
+        border-radius:10px;overflow:hidden;font-size:13px;margin:6px 0 14px}
+table.d th{background:#f7fafc;text-align:left;padding:9px 12px;font-size:12px;color:var(--ink-2);
+  border-bottom:1px solid var(--line);white-space:nowrap}
+table.d td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.d tr:last-child td{border-bottom:0}
+.tblwrap{overflow-x:auto}
+
+/* ---- 画面モック枠 ---- */
+.screen{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+        box-shadow:0 6px 22px rgba(20,60,90,.07);margin:0 0 8px}
+.screen .bar{background:#f0f4f8;border-bottom:1px solid var(--line);padding:7px 12px;display:flex;
+  align-items:center;gap:8px;font-size:11.5px;color:var(--mute);font-family:ui-monospace,monospace}
+.screen .bar .dots{display:flex;gap:4px}
+.screen .bar .dots i{width:8px;height:8px;border-radius:50%;background:#cdd8e3;display:block}
+.screen .bar .url{background:#fff;border:1px solid var(--line);border-radius:20px;padding:3px 11px;flex:1}
+.screen .body{padding:18px}
+.caption{font-size:12px;color:var(--mute);margin:0 0 22px;padding-left:2px}
+.caption b{color:var(--ink-2)}
+
+.step{display:flex;align-items:center;gap:9px;margin:22px 0 8px}
+.step .n{width:26px;height:26px;border-radius:8px;background:var(--brand-50);color:var(--brand-d);
+  font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.step h3{margin:0;font-size:15px}
+.arrowdown{text-align:center;color:var(--mute);font-size:20px;margin:2px 0 0}
+
+/* サイト内パーツ（モック用） */
+.mk-header{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.mk-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;color:var(--brand-d)}
+.mk-brand .mark{width:27px;height:27px;border-radius:8px;background:linear-gradient(135deg,var(--brand),#54d39a);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
+.mk-nav{display:flex;gap:2px;margin-left:6px}
+.mk-nav span{padding:6px 11px;border-radius:7px;font-weight:700;font-size:12.5px;color:var(--ink-2)}
+.mk-nav span.on{background:var(--brand-50);color:var(--brand-d)}
+.crumbs{font-size:12px;color:var(--mute);margin-bottom:12px}
+.crumbs b{color:var(--brand-d)}
+.blk-h{display:flex;align-items:center;gap:9px;margin:18px 0 10px}
+.blk-h h4{margin:0;font-size:15px}
+.blk-h .more{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--brand-d)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.area-card{background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:2px}
+.area-card:hover{border-color:var(--brand)}
+.area-card .rg{font-weight:800;font-size:14px}
+.area-card .rc{font-size:11.5px;color:var(--mute)}
+.area-card .pref{font-size:11px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+.area-card.hi{border-color:var(--brand);background:var(--brand-50);box-shadow:0 0 0 3px rgba(43,182,115,.14)}
+.pref-tabs{display:flex;gap:6px;flex-wrap:wrap;background:#f7fafc;border:1px solid var(--line);
+  border-radius:11px;padding:10px 12px;margin:0 0 14px}
+.pref-tabs .lb{font-size:11px;font-weight:800;color:var(--mute);width:100%;margin-bottom:2px}
+.pref-tabs a{background:#fff;border:1.5px solid var(--line);border-radius:20px;padding:5px 12px;
+  font-size:12.5px;font-weight:700;color:var(--ink-2);text-decoration:none}
+.pref-tabs a.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.city-list{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+.city-list a{background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 11px;
+  font-size:12.5px;color:var(--ink-2);text-decoration:none}
+.city-list a.dim{opacity:.4;text-decoration:line-through}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:#fff;border:1.5px solid var(--line);border-radius:20px;padding:5px 12px;font-size:12.5px;
+  font-weight:700;color:var(--ink-2)}
+.chip.on{border-color:var(--brand);color:var(--brand-d);background:var(--brand-50)}
+.chip.sug{border-color:var(--accent);color:#c4600a;background:#fff1e6}
+.btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:9px;padding:9px 16px;
+  font-weight:800;font-size:13px;background:var(--brand);color:#fff;font-family:inherit}
+.btn.ghost{background:#fff;color:var(--brand-d);border:1.5px solid var(--brand)}
+.btn.sm{padding:6px 12px;font-size:12px}
+.tag{font-size:11px;font-weight:800;border-radius:6px;padding:3px 9px;display:inline-block}
+.tag.g{background:var(--brand-50);color:var(--brand-d)}
+.tag.o{background:#fff1e6;color:#c4600a}
+.tag.b{background:#e7f1ff;color:#1c61c4}
+.tag.gray{background:#eef2f6;color:var(--ink-2)}
+
+/* 項目マーク（C-1） */
+.legend{display:flex;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);
+        border-radius:10px;padding:11px 15px;margin:0 0 16px;font-size:12.5px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.i-list i{background:var(--list)}.i-det i{background:var(--det)}.i-int i{background:var(--int)}
+.fld{position:relative;padding-left:14px}
+.fld::before{content:"";position:absolute;left:0;top:.5em;width:8px;height:8px;border-radius:3px}
+.fld.L::before{background:var(--list)}
+.fld.D::before{background:var(--det)}
+.fld.I::before{background:var(--int)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.dot.L{background:var(--list)}.dot.D{background:var(--det)}.dot.I{background:var(--int)}
+
+/* 求人カード（一覧） */
+.job-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 16px}
+.job-card .tagrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.job-card h5{font-size:15px;margin:2px 0 6px;line-height:1.45}
+.job-card .co{color:var(--ink-2);font-size:12.5px;margin-bottom:9px}
+.job-meta{display:flex;flex-wrap:wrap;gap:5px 14px;font-size:12.5px;color:var(--ink-2);
+  border-top:1px dashed var(--line);padding-top:9px}
+.job-meta b{color:var(--ink)}
+
+/* 求人詳細（2段ヘッダー = 0-4 B案） */
+.dt-emp{background:#f7fafc;border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin:10px 0 14px}
+.dt-emp .row{display:flex;gap:10px;align-items:baseline;font-size:13.5px}
+.dt-emp .row+.row{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+.dt-emp .k{font-size:11px;font-weight:800;color:var(--mute);width:64px;flex:0 0 auto}
+.dt-emp .v{font-weight:700}
+.hl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:11px;overflow:hidden;margin:0 0 14px}
+.hl-grid .it{background:#fff;padding:11px 13px}
+.hl-grid .lbl{font-size:10.5px;color:var(--mute);font-weight:800;margin-bottom:2px}
+.hl-grid .val{font-size:14px;font-weight:800}
+.dsec h6{font-size:13.5px;border-left:4px solid var(--brand);padding-left:9px;margin:16px 0 6px}
+.dsec ul{margin:0;padding-left:20px;font-size:13px;color:var(--ink-2)}
+
+/* ファセット（D-3） */
+.facet{background:#f7fafc;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.facet .hd{font-size:11px;font-weight:800;color:var(--mute);margin-bottom:9px;letter-spacing:.05em}
+.facet-row{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.facet-row .f{background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:9px 11px}
+.facet-row .f .fk{font-size:10.5px;font-weight:800;color:var(--mute);margin-bottom:3px}
+.facet-row .f .fv{font-size:12.5px;font-weight:700;color:var(--ink-2);display:flex;justify-content:space-between}
+.hier{background:#eafaf2;border:1.5px solid var(--brand);border-radius:12px;padding:13px 15px;margin-bottom:10px}
+.hier .hd{font-size:11px;font-weight:800;color:var(--brand-d);margin-bottom:8px;letter-spacing:.05em}
+.hier .path{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;flex-wrap:wrap}
+.hier .path .sep{color:var(--brand);font-weight:400}
+.hier .u{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--brand-d);margin-top:7px}
+
+/* E-1 デザイン3方向 */
+.dir-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.dir{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.dir .dh{padding:11px 14px;font-weight:800;font-size:13.5px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.dir .dh small{font-weight:700;font-size:10.5px;opacity:.85}
+.dir .db{padding:14px}
+.dir .memo{font-size:12px;color:var(--ink-2);padding:0 14px 14px}
+.dir .memo li{margin-bottom:4px}
+.dir .memo ul{margin:6px 0 0;padding-left:17px}
+
+/* 方向A: ジョブメドレー系 */
+.sA{--c:#2bb673;--c2:#eafaf2;--cd:#1f9d61}
+.sA .dh{background:#2bb673}
+.sA .mock{font-size:12px}
+.sA .m-card{border:1px solid #e6ecf2;border-radius:11px;padding:12px}
+.sA .m-t{font-weight:800;font-size:13.5px;margin:5px 0 4px;line-height:1.4}
+.sA .m-meta{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:11px;color:#54657a;
+  border-top:1px dashed #e6ecf2;padding-top:7px;margin-top:7px}
+.sA .m-tag{font-size:10px;font-weight:800;background:#eafaf2;color:#1f9d61;border-radius:5px;padding:2px 7px}
+.sA .m-cta{background:#2bb673;color:#fff;border-radius:8px;padding:7px;text-align:center;font-weight:800;font-size:11.5px;margin-top:9px}
+
+/* 方向B: パソナ系 */
+.sB .dh{background:#123a6b}
+.sB .m-card{border:1px solid #e6ecf2;border-radius:4px;overflow:hidden}
+.sB .m-ph{height:64px;background:linear-gradient(120deg,#123a6b,#3f6da8);display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:26px;opacity:.9}
+.sB .m-in{padding:14px 13px}
+.sB .m-t{font-weight:700;font-size:14px;margin:0 0 8px;line-height:1.6;letter-spacing:.01em}
+.sB .m-meta{font-size:11px;color:#54657a;line-height:2}
+.sB .m-cta{background:#c8102e;color:#fff;border-radius:2px;padding:9px;text-align:center;
+  font-weight:700;font-size:11.5px;margin-top:12px;letter-spacing:.08em}
+
+/* 方向C: 中間 */
+.sC .dh{background:#0f8f7e}
+.sC .m-card{border:1px solid #e6ecf2;border-radius:10px;overflow:hidden}
+.sC .m-ph{height:44px;background:linear-gradient(120deg,#0f8f7e,#4dc4b0);}
+.sC .m-in{padding:13px}
+.sC .m-t{font-weight:800;font-size:13.5px;margin:0 0 6px;line-height:1.5}
+.sC .m-meta{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#54657a;
+  border-top:1px solid #eef2f6;padding-top:8px;margin-top:8px}
+.sC .m-tag{font-size:10px;font-weight:800;background:#e5f7f4;color:#0b6e61;border-radius:20px;padding:2px 9px}
+.sC .m-cta{background:#0f8f7e;color:#fff;border-radius:8px;padding:8px;text-align:center;font-weight:800;font-size:11.5px;margin-top:10px}
+
+.reco{background:var(--brand-50);border:1.5px solid var(--brand);border-radius:11px;padding:6px 11px;
+  font-size:11.5px;font-weight:800;color:var(--brand-d);display:inline-block}
+
+/* カラー案 */
+.pal{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin-bottom:12px}
+.pal .ph{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.pal .ph b{font-size:14.5px}
+.pal .ph span{font-size:12px;color:var(--ink-2)}
+.sw{display:flex;gap:9px;flex-wrap:wrap}
+.sw div{border-radius:9px;padding:9px 11px;min-width:104px;font-size:10.5px;font-weight:800;
+  font-family:ui-monospace,monospace;border:1px solid rgba(0,0,0,.06)}
+.sw div small{display:block;font-family:inherit;font-size:10px;opacity:.8;font-weight:700;margin-bottom:2px}
+
+.ask{background:#0e1726;color:#fff;border-radius:12px;padding:16px 20px;margin:24px 0 0}
+.ask .lbl{font-size:11px;font-weight:800;color:var(--brand);letter-spacing:.06em;margin-bottom:6px}
+.ask p{margin:0;font-size:14px;line-height:1.75}
+.ask p+p{margin-top:9px}
+
+@media(max-width:900px){
+  .grid4,.grid3,.grid2,.dir-grid,.facet-row{grid-template-columns:1fr}
+  .hl-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="doc-head">
+  <div class="t">ヒトラボエージェント様｜<b>求人サイト 実現イメージ</b> — エリアの見せ方／表示項目／検索</div>
+  <div class="s">論点リストのうち A-2・C-1・D-1・D-3・E-1 について、実現イメージを画面でご説明する資料です。
+    掲載している求人・件数・施設名はすべてダミーです。</div>
+  <div class="tabs">
+    <button class="on" onclick="go(0,this)">① A-2 エリアの見せ方</button>
+    <button onclick="go(1,this)">② C-1 一覧／詳細の表示項目</button>
+    <button onclick="go(2,this)">③ D-1 住所→最寄り駅／D-3 検索の絞り込み</button>
+    <button onclick="go(3,this)">④ E-1 デザイン方向性</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ============================================================ -->
+<!-- ① A-2                                                        -->
+<!-- ============================================================ -->
+<section class="tabpane on">
+  <h1 class="q">A-2　エリア表示の切り方</h1>
+  <p class="qsub">「主要エリアに集約する形にした場合、画面が移った後に都道府県を選べるのか」というご質問への回答です。</p>
+
+  <div class="ans">
+    <div class="lbl">回答</div>
+    <p><b>はい、選択できます。</b>「主要エリア → 都道府県 → 市区町村」の3段構成にし、
+    <b>2段目以降のすべての画面に都道府県セレクタを常設</b>します。一度エリアに入った後も、
+    セレクタから他の都道府県へ直接移動できます。</p>
+    <p>また、トップには「主要エリア」と併せて<b>「全国から探す（47都道府県一覧）」</b>も置きますので、
+    はじめから都道府県で選びたい方も1クリックで到達できます。</p>
+  </div>
+
+  <div class="step"><span class="n">1</span><h3>トップ／職種トップ ― 主要エリアに集約（＋全国から探す）</h3></div>
+  <div class="screen">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">（求人サイト）/kanri-eiyoushi/</span></div>
+    <div class="body">
+      <div class="mk-header">
+        <div class="mk-brand"><span class="mark">🍀</span>おしごとらぼ</div>
+        <div class="mk-nav"><span class="on">管理栄養士</span><span>栄養士</span><span>調理師</span><span>調理員</span></div>
+      </div>
+      <div class="blk-h"><h4>エリアから探す（管理栄養士）</h4><span class="more">全国から探す（47都道府県）›</span></div>
+      <div class="grid4">
+        <div class="area-card hi"><span class="rg">首都圏</span><span class="rc">629件</span>
+          <span class="pref">東京・神奈川・埼玉・千葉・茨城・栃木・群馬</span></div>
+        <div class="area-card"><span class="rg">関西</span><span class="rc">312件</span>
+          <span class="pref">大阪・兵庫・京都・滋賀・奈良・和歌山</span></div>
+        <div class="area-card"><span class="rg">東海</span><span class="rc">184件</span>
+          <span class="pref">愛知・静岡・岐阜・三重</span></div>
+        <div class="area-card"><span class="rg">九州・沖縄</span><span class="rc">148件</span>
+          <span class="pref">福岡・熊本・鹿児島 ほか</span></div>
+      </div>
+      <div style="margin-top:9px" class="grid4">
+        <div class="area-card"><span class="rg">北海道・東北</span><span class="rc">96件</span><span class="pref">北海道・宮城 ほか</span></div>
+        <div class="area-card"><span class="rg">北信越</span><span class="rc">64件</span><span class="pref">新潟・長野 ほか</span></div>
+        <div class="area-card"><span class="rg">中国</span><span class="rc">58件</span><span class="pref">広島・岡山 ほか</span></div>
+        <div class="area-card"><span class="rg">四国</span><span class="rc">31件</span><span class="pref">愛媛・香川 ほか</span></div>
+      </div>
+      <p class="caption" style="margin-top:12px">
+        <b>ポイント:</b> 各ブロックのカード内に<b>含まれる都道府県名を明記</b>します。
+        「首都圏を押したら何が出るのか」が押す前に分かるため、迷いが生まれません。</p>
+    </div>
+  </div>
+  <p class="arrowdown">▼ 「首都圏」をクリック</p>
+
+  <div class="step"><span class="n">2</span><h3>遷移後 ― 画面上部に<u>都道府県セレクタが常設</u>される（ご質問への回答）</h3></div>
+  <div class="screen">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">（求人サイト）/kanri-eiyoushi/area/shutoken/</span></div>
+    <div class="body">
+      <div class="mk-header">
+        <div class="mk-brand"><span class="mark">🍀</span>おしごとらぼ</div>
+        <div class="mk-nav"><span class="on">管理栄養士</span><span>栄養士</span><span>調理師</span><span>調理員</span></div>
+      </div>
+      <div class="crumbs">トップ › <b>管理栄養士</b> › 首都圏</div>
+      <div class="pref-tabs">
+        <span class="lb">▼ 都道府県から選ぶ（この列はエリア配下の全ページに常設されます）</span>
+        <a href="#" class="on">すべて<span style="opacity:.7">(629)</span></a>
+        <a href="#">東京都(248)</a><a href="#">神奈川県(162)</a><a href="#">埼玉県(121)</a>
+        <a href="#">千葉県(98)</a><a href="#">茨城県(0)</a><a href="#">栃木県(0)</a><a href="#">群馬県(0)</a>
+      </div>
+      <div class="pref-tabs" style="background:#fff;border-style:dashed">
+        <span class="lb">▼ 他のエリアへ横移動（エリアも常設）</span>
+        <a href="#" class="on">首都圏</a><a href="#">関西</a><a href="#">東海</a><a href="#">九州・沖縄</a>
+        <a href="#">北海道・東北</a><a href="#">北信越</a><a href="#">中国</a><a href="#">四国</a>
+      </div>
+      <div class="blk-h"><h4>首都圏の管理栄養士求人</h4><span class="more" style="margin-left:auto;color:var(--mute);font-weight:700">629件</span></div>
+      <div class="grid2">
+        <div class="job-card">
+          <div class="tagrow"><span class="tag g">正社員</span><span class="tag b">病院</span><span class="tag o">土日休み</span></div>
+          <h5>管理栄養士／栄養管理・献立作成（250床）</h5>
+          <div class="co">みどり総合病院（さいたま市大宮区）</div>
+          <div class="job-meta"><span>月給 <b>26.0〜32.0万円</b></span><span>大宮駅 徒歩8分</span></div>
+        </div>
+        <div class="job-card">
+          <div class="tagrow"><span class="tag g">正社員</span><span class="tag b">保育園</span><span class="tag o">未経験可</span></div>
+          <h5>管理栄養士／園児150名の給食管理</h5>
+          <div class="co">さくら保育園（東京都新宿区）</div>
+          <div class="job-meta"><span>月給 <b>24.0〜28.5万円</b></span><span>高田馬場駅 徒歩5分</span></div>
+        </div>
+      </div>
+      <p class="caption" style="margin-top:12px">
+        <b>ポイント:</b> 求人0件の県は <b>(0)</b> と表示して押せない状態にします
+        （求人0件のエリアはページを作らない方針に沿うものです）。「押したのに0件だった」が起きません。</p>
+    </div>
+  </div>
+  <p class="arrowdown">▼ 「東京都」をクリック</p>
+
+  <div class="step"><span class="n">3</span><h3>都道府県 → 市区町村（セレクタは残り続ける）</h3></div>
+  <div class="screen">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">（求人サイト）/kanri-eiyoushi/area/tokyo/</span></div>
+    <div class="body">
+      <div class="crumbs">トップ › <b>管理栄養士</b> › 首都圏 › 東京都</div>
+      <div class="pref-tabs">
+        <span class="lb">▼ 都道府県（常設・ここから他県へ直接移動できます）</span>
+        <a href="#">すべて(629)</a><a href="#" class="on">東京都(248)</a><a href="#">神奈川県(162)</a>
+        <a href="#">埼玉県(121)</a><a href="#">千葉県(98)</a>
+      </div>
+      <div class="blk-h"><h4>市区町村から探す（東京都・管理栄養士）</h4></div>
+      <div class="city-list">
+        <a href="#">新宿区(38)</a><a href="#">渋谷区(41)</a><a href="#">世田谷区(29)</a><a href="#">豊島区(22)</a>
+        <a href="#">中野区(19)</a><a href="#">杉並区(17)</a><a href="#">品川区(16)</a><a href="#">大田区(14)</a>
+        <a href="#" class="dim">青ヶ島村(0)</a><a href="#" class="dim">利島村(0)</a>
+      </div>
+      <div class="note"><b>エリアのグループ化も併せて反映しています。</b>
+      求人が少ない市区町村は「中野〜高円寺エリア」のようなまとまりを作り、
+      「1件だけの区」が並ぶ状態を避けます。</div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="num">✓</span><h2>A-2 のまとめ</h2></div>
+  <div class="tblwrap"><table class="d">
+    <tr><th>ご懸念</th><th>対応</th></tr>
+    <tr><td>画面移行後に都道府県を選択できるか</td><td><b>できます。</b>2段目以降の全ページに都道府県セレクタを常設</td></tr>
+    <tr><td>はじめから都道府県で選びたい方</td><td>トップに「全国から探す（47都道府県）」を併設</td></tr>
+    <tr><td>主要エリアに何が含まれるか分からない</td><td>カード内に含まれる都道府県名を明記</td></tr>
+    <tr><td>0件のエリアを押してしまう</td><td>件数を表示し、0件は非活性にする</td></tr>
+  </table></div>
+
+  <div class="ask">
+    <div class="lbl">ご確認いただきたい点</div>
+    <p>この形で「主要エリアに集約」という方向で進めてよろしいでしょうか。</p>
+    <p>あわせて1点。<b>「主要エリア」のブロックの切り方</b>（首都圏・関西・東海…の8ブロック）が
+    貴社の営業エリアの感覚と合っているか、ご確認をお願いします。求人の分布に偏りがある場合は
+    ブロックの粒度を調整します。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ② C-1                                                        -->
+<!-- ============================================================ -->
+<section class="tabpane">
+  <h1 class="q">C-1　サイトに載せる項目</h1>
+  <p class="qsub">「求人の詳細ページのことか、検索画面上の表示情報のことか」というご質問への回答です。</p>
+
+  <div class="ans">
+    <div class="lbl">回答</div>
+    <p><b>両方です。ただし役割が違います。</b>項目を「詳細用」「一覧用」と別に用意するのではなく、
+    <b>1つの項目マスタを持ち、それぞれの項目に「どこまで出すか」を設定します。</b></p>
+    <p>設定は3段階です。<span class="dot L"></span><b>一覧＋詳細に出す</b>（求職者が一覧で比較する項目）／
+    <span class="dot D"></span><b>詳細のみ</b>（読み込む段階の情報）／
+    <span class="dot I"></span><b>内部のみ</b>（サイトには出さず貴社の運用で使う）。</p>
+    <p>この考え方でよろしければ、<b>Teams側の求人詳細の項目一覧をいただき次第、
+    全項目をこの3段に仕分けた案をお出しします。</b></p>
+  </div>
+
+  <div class="legend">
+    <span class="i-list"><i></i><b>一覧＋詳細に出す</b>（比較に使う）</span>
+    <span class="i-det"><i></i><b>詳細のみ</b>（読み込む情報）</span>
+    <span class="i-int"><i></i><b>内部のみ</b>（サイトに出さない）</span>
+  </div>
+
+  <div class="step"><span class="n">A</span><h3>検索画面（一覧）に出す情報 ― 「比較して選ぶ」ための最小限</h3></div>
+  <div class="screen">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">（求人サイト）/kanri-eiyoushi/jobs/</span></div>
+    <div class="body">
+      <div class="crumbs">トップ › <b>管理栄養士</b> › 求人検索　<span style="color:var(--brand-d);font-weight:800">248件</span></div>
+      <div class="grid2">
+        <div class="job-card">
+          <div class="tagrow">
+            <span class="tag g">正社員</span><span class="tag b">病院</span>
+            <span class="tag o">土日休み</span><span class="tag gray">委託</span>
+          </div>
+          <h5>管理栄養士／栄養管理・献立作成（250床）</h5>
+          <div class="co">みどり総合病院（さいたま市大宮区）</div>
+          <div class="job-meta">
+            <span>月給 <b>26.0〜32.0万円</b></span>
+            <span>大宮駅 徒歩8分</span>
+            <span>年間休日 <b>120日</b></span>
+          </div>
+        </div>
+        <div class="job-card" style="border-style:dashed;background:#fbfdff">
+          <div style="font-size:11.5px;color:var(--det);font-weight:800;margin-bottom:8px">
+            ▲ 左のカードに出ている項目 = これだけ</div>
+          <div style="font-size:12.5px;line-height:2">
+            <div class="fld L">職種</div>
+            <div class="fld L">雇用形態</div>
+            <div class="fld L">施設種別</div>
+            <div class="fld L">こだわり条件（上位2つのみ）</div>
+            <div class="fld L">求人タイトル</div>
+            <div class="fld L">施設名 ＋ 勤務地（市区町村まで）</div>
+            <div class="fld L">給与（月給レンジ）／最寄り駅・徒歩分／年間休日</div>
+            <div class="fld L" style="color:var(--warn)">雇用元区分（直営／委託）バッジのみ</div>
+          </div>
+        </div>
+      </div>
+      <div class="note"><b>雇用元の表示について:</b> 一覧では
+      <b>「直営／委託」のバッジだけ</b>を出し、<b>委託会社名は詳細ページから</b>とするのが弊社案です。
+      一覧に社名まで並べると情報量が増えて比較しづらくなるためです。</div>
+    </div>
+  </div>
+
+  <div class="step"><span class="n">B</span><h3>求人詳細ページに出す情報 ― 「読み込んで応募を決める」ための全量</h3></div>
+  <div class="screen">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">（求人サイト）/kanri-eiyoushi/jobs/J-10248/</span></div>
+    <div class="body">
+      <div class="crumbs">トップ › <b>管理栄養士</b> › 埼玉県 › さいたま市大宮区 › この求人</div>
+      <h5 style="font-size:19px;margin:4px 0 8px;line-height:1.45">管理栄養士／栄養管理・献立作成（250床の急性期病院）</h5>
+
+      <div class="dt-emp">
+        <div style="font-size:10.5px;font-weight:800;color:var(--warn);letter-spacing:.05em;margin-bottom:8px">
+          ★ 雇用元を明記する場合の2段ヘッダー</div>
+        <div class="row"><span class="k">募集元</span>
+          <span class="v">〇〇フードサービス株式会社 <span class="tag gray">給食委託会社</span></span></div>
+        <div class="row"><span class="k">勤務先</span>
+          <span class="v">みどり総合病院</span>
+          <span style="font-size:11.5px;color:var(--mute)">医療法人みどり会／さいたま市大宮区・250床</span></div>
+      </div>
+
+      <div class="hl-grid">
+        <div class="it"><div class="lbl">給与</div><div class="val">月給 26.0〜32.0万円</div></div>
+        <div class="it"><div class="lbl">勤務地</div><div class="val">さいたま市大宮区</div></div>
+        <div class="it"><div class="lbl">雇用形態</div><div class="val">正社員</div></div>
+      </div>
+
+      <div class="grid2">
+        <div class="dsec">
+          <h6>詳細ページで追加される項目</h6>
+          <div style="font-size:12.5px;line-height:2">
+            <div class="fld D">仕事内容（本文）</div>
+            <div class="fld D">応募資格・必要資格</div>
+            <div class="fld D">歓迎スキル・経験</div>
+            <div class="fld D">勤務時間・シフト・残業目安</div>
+            <div class="fld D">休日休暇（詳細）</div>
+            <div class="fld D">待遇・福利厚生</div>
+            <div class="fld D">賞与・昇給・各種手当</div>
+            <div class="fld D">住所（番地まで）・地図・アクセス</div>
+            <div class="fld D">施設の規模・特徴（食数・病床数など）</div>
+            <div class="fld D">写真（施設・厨房）</div>
+            <div class="fld D">受動喫煙防止措置</div>
+            <div class="fld D">選考プロセス・採用予定人数</div>
+            <div class="fld D"><b>委託会社名</b>（← 一覧には出さない）</div>
+          </div>
+        </div>
+        <div class="dsec">
+          <h6>サイトに出さない項目（内部のみ）</h6>
+          <div style="font-size:12.5px;line-height:2">
+            <div class="fld I">紹介手数料率・請求条件</div>
+            <div class="fld I">施設担当者名・直通連絡先</div>
+            <div class="fld I">社内メモ・過去の紹介実績</div>
+            <div class="fld I">推薦時の注意事項</div>
+            <div class="fld I">求人の掲載期限・優先度</div>
+            <div class="fld I"><b>委託会社名の掲載可否フラグ</b></div>
+          </div>
+          <div class="note" style="margin-top:14px"><b>Google for Jobs 構造化データ</b>にも
+          この仕分けが効きます。詳細ページに出す項目のうち、給与・勤務地・雇用形態・応募資格は
+          構造化データにも出力し、Google求人検索に載せます。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="num">✓</span><h2>C-1 のまとめ</h2></div>
+  <div class="tblwrap"><table class="d">
+    <tr><th>段階</th><th>目的</th><th>設計上の意味</th></tr>
+    <tr><td><span class="dot L"></span><b>一覧＋詳細</b></td><td>並べて比較する</td>
+        <td>検索の絞り込み軸とほぼ一致させる</td></tr>
+    <tr><td><span class="dot D"></span><b>詳細のみ</b></td><td>読み込んで応募を決める</td>
+        <td>Google for Jobs 構造化データの対象</td></tr>
+    <tr><td><span class="dot I"></span><b>内部のみ</b></td><td>貴社の運用に使う</td>
+        <td>Salesforce上の項目として持つが公開しない</td></tr>
+  </table></div>
+
+  <div class="warnbox"><b>上記は仮案です。</b>
+  「一般的な求人サイトならこう」という前提で組んだもので、
+  <b>Teams側の実際の項目一覧をいただいてから確定させます。</b>
+  この項目が、Salesforceの求人オブジェクトの項目定義にそのままつながります。</div>
+
+  <div class="ask">
+    <div class="lbl">ご確認いただきたい点</div>
+    <p>① この<b>「3段に仕分ける」考え方</b>でよろしいでしょうか。</p>
+    <p>② <b>Teams側の求人詳細の項目一覧</b>を、いつ・どなたからいただけますか。
+    受領後、全項目をこの3段に仕分けた案を作成してご確認いただきます。</p>
+    <p>③ 一覧には<b>「直営／委託」のバッジのみ</b>を出し、<b>委託会社名は詳細ページから</b>という
+    案でよろしいでしょうか。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ③ D-1 + D-3                                                  -->
+<!-- ============================================================ -->
+<section class="tabpane">
+  <h1 class="q">D-1　エリアの最小単位／住所から最寄り駅の自動選択</h1>
+  <p class="qsub">「住所を入れたら最寄り駅も自動選択されたらアリ」というご要望への回答です。</p>
+
+  <div class="ans">
+    <div class="lbl">回答</div>
+    <p><b>実現可能です。</b>住所から緯度経度を取り、そこから近い駅を割り出す仕組みで実装できます。</p>
+    <p>ただし<b>「駅マスタの整備」と「求人データへのジオコーディング」が必要になります。</b>
+    対応範囲によって段階が分かれますので、<b>3案でご提示します。</b>
+    <b>まずは「案2」を推奨</b>します（求人側に最寄り駅を自動付与し、検索で駅から絞れる状態）。</p>
+  </div>
+
+  <div class="step"><span class="n">1</span><h3>実現後の画面 ― 住所を入れると最寄り駅が自動で候補に出る</h3></div>
+  <div class="screen">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">（求人サイト）/kanri-eiyoushi/jobs/</span></div>
+    <div class="body">
+      <div class="crumbs">トップ › <b>管理栄養士</b> › 求人検索</div>
+
+      <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px;box-shadow:0 6px 20px rgba(20,60,90,.06)">
+        <div style="display:grid;grid-template-columns:1.4fr auto;gap:10px;align-items:end">
+          <div>
+            <div style="font-size:11px;font-weight:800;color:var(--mute);margin-bottom:4px">
+              お住まいの住所・郵便番号（任意）</div>
+            <div style="border:1.5px solid var(--brand);border-radius:9px;padding:10px 12px;font-size:13.5px;
+                        background:var(--brand-50);display:flex;align-items:center;gap:8px">
+              <span style="color:var(--brand-d)">📍</span>東京都新宿区西早稲田2-1-1
+              <span style="margin-left:auto;font-size:11px;color:var(--brand-d);font-weight:800">現在地を使う</span>
+            </div>
+          </div>
+          <button class="btn" style="padding:11px 22px">この条件で探す</button>
+        </div>
+
+        <div style="margin-top:14px;padding-top:13px;border-top:1px dashed var(--line)">
+          <div style="font-size:11.5px;font-weight:800;color:var(--accent);margin-bottom:8px">
+            ⚡ 住所から最寄り駅を自動で判定しました ― 使う駅を選んでください</div>
+          <div class="chips">
+            <span class="chip on">✓ 高田馬場駅<span style="font-weight:700;color:var(--mute)">（徒歩9分）</span></span>
+            <span class="chip sug">西早稲田駅<span style="font-weight:700">（徒歩4分）</span></span>
+            <span class="chip sug">早稲田駅<span style="font-weight:700">（徒歩12分）</span></span>
+            <span class="chip sug">面影橋駅<span style="font-weight:700">（徒歩7分）</span></span>
+          </div>
+          <div style="margin-top:10px;font-size:11.5px;font-weight:800;color:var(--mute)">通勤時間で絞る</div>
+          <div class="chips" style="margin-top:6px">
+            <span class="chip">〜20分</span><span class="chip on">〜30分</span>
+            <span class="chip">〜45分</span><span class="chip">〜60分</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="caption" style="margin-top:12px">
+        <b>ポイント:</b> 求職者は「駅名を知らない／正式名称が分からない」ことが多く、
+        <b>住所だけ入れれば候補が出る</b>のが体験として最も軽くなります。
+        現在地ボタンはスマートフォンでの利用を想定しています。</p>
+    </div>
+  </div>
+
+  <div class="sec"><span class="num">2</span><h2>段階案（どこまで対応するか）</h2></div>
+  <div class="tblwrap"><table class="d">
+    <tr><th>案</th><th>できること</th><th>必要な作業</th><th>対応時期</th></tr>
+    <tr>
+      <td><b>案1</b></td>
+      <td>市区町村まで階層で絞り込み。フリーワード検索で駅名も引っかかる（求人本文に駅名がある場合）</td>
+      <td>なし（当初のサイトマップ案どおり）</td>
+      <td>Phase1 標準</td>
+    </tr>
+    <tr style="background:var(--brand-50)">
+      <td><b>案2</b></td>
+      <td><b>求人登録時に最寄り駅・徒歩分を自動付与</b>し、検索で<b>駅から絞り込める</b>。求職者が住所を入れると最寄り駅が候補表示される（上記の画面）</td>
+      <td>・駅マスタの整備（全国約9,000駅）<br>・求人データの住所をジオコーディング（バッチ）<br>・住所→駅の逆引きロジック<br>・検索UIの駅チップ実装</td>
+      <td><b>Phase1 で対応可</b><br><span class="reco">★ 推奨</span></td>
+    </tr>
+    <tr>
+      <td><b>案3</b></td>
+      <td>通勤時間（ドアtoドア）で絞り込み。乗換を考慮した所要時間順に並べ替え</td>
+      <td>・案2に加えて外部の経路探索APIとの連携<br>・API利用料が月額で発生します</td>
+      <td>Phase2</td>
+    </tr>
+  </table></div>
+
+  <div class="warnbox"><b>案2の前提:</b> 求人データに<b>住所が番地まで入っていること</b>が必要です。
+  「さいたま市大宮区」までしか情報がない求人は、駅を自動付与できません。
+  <b>求人データを拝見してから、対応範囲を確定させます。</b></div>
+
+  <div class="note"><b>エリアの最小単位について:</b>
+  <b>市区町村までを推奨</b>します（求人0件のエリアはページを作りません）。
+  案2を採用しても、<b>URL・SEOページは市区町村まで</b>とし、駅は検索条件として扱います。
+  駅ごとにページを作ると全国約9,000駅×職種数のページ数になり、大半が0件になるためです。</div>
+
+  <hr style="border:0;border-top:1px solid var(--line);margin:36px 0 30px">
+
+  <h1 class="q">D-3　検索の絞り込み軸と優先順位</h1>
+  <p class="qsub">「職種＞エリア＞雇用形態＝施設種別＝こだわり条件＝給与（雇用形態以降は同列）」というご要望への回答です。</p>
+
+  <div class="ans">
+    <div class="lbl">回答</div>
+    <p><b>ご要望どおり反映できます。</b>使う軸は6つとも同じで、上下関係をフラットにするだけですので、
+    追加の開発は発生しません。</p>
+    <p>1点だけ補足です。<b>「UIの同列」と「SEO用の専用ページを持つか」は別の話</b>になります。
+    施設種別とこだわり条件は「保育園 栄養士 求人」「栄養士 土日休み 求人」のような検索需要があるため、
+    <b>UIでは同列に並べつつ、SEO用のURLも別途持たせたい</b>と考えています。</p>
+  </div>
+
+  <div class="screen">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">（求人サイト）/kanri-eiyoushi/area/tokyo/shinjuku/?employment=fulltime&facility=hospital</span></div>
+    <div class="body">
+      <div class="hier">
+        <div class="hd">▼ 階層ナビ（上下関係あり・URLになる・SEOページになる）</div>
+        <div class="path"><span>職種</span><span class="sep">›</span><span>エリア（都道府県 › 市区町村）</span></div>
+        <div class="u">/kanri-eiyoushi/area/tokyo/shinjuku/</div>
+      </div>
+
+      <div class="facet">
+        <div class="hd">▼ 絞り込みパネル（<b style="color:var(--brand-d)">同列に並べる ← ご要望を反映</b>・検索条件）</div>
+        <div class="facet-row">
+          <div class="f"><div class="fk">雇用形態</div><div class="fv">正社員 <span>▾</span></div></div>
+          <div class="f"><div class="fk">施設種別</div><div class="fv">病院 <span>▾</span></div></div>
+          <div class="f"><div class="fk">こだわり条件</div><div class="fv">指定なし <span>▾</span></div></div>
+          <div class="f"><div class="fk">給与</div><div class="fv">指定なし <span>▾</span></div></div>
+          <div class="f" style="border-color:var(--accent);background:#fff8f3">
+            <div class="fk" style="color:#c4600a">雇用元 ★ご確認</div><div class="fv">指定なし <span>▾</span></div></div>
+        </div>
+        <div style="margin-top:11px;font-size:11.5px;color:var(--ink-2)">
+          ・4つ（＋雇用元で5つ）を<b>同じ見た目・同じ深さ</b>で横並びにします<br>
+          ・「まず施設種別から」といった<b>誘導表現は行いません</b><br>
+          ・選択済み条件のチップも<b>選んだ順</b>に並べます（軸の優先順位順にしません）
+        </div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11.5px;font-weight:800;color:var(--mute)">選択中:</span>
+        <span class="chip on">新宿区 ✕</span><span class="chip on">正社員 ✕</span><span class="chip on">病院 ✕</span>
+        <span style="font-size:12.5px;color:var(--brand-d);font-weight:800;margin-left:6px">14件</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="num">✓</span><h2>「UIの同列」と「SEOの階層」の対応表</h2></div>
+  <div class="tblwrap"><table class="d">
+    <tr><th>軸</th><th>UI上の扱い</th><th>専用ページ（URL）</th><th>理由</th></tr>
+    <tr><td><b>職種</b></td><td>階層ナビ（1位）</td><td>✅ <code>/{職種}/</code></td><td>「管理栄養士 求人」で検索される・集客の主力</td></tr>
+    <tr><td><b>エリア</b></td><td>階層ナビ（2位）</td><td>✅ <code>/{職種}/area/{都道府県}/{市区町村}/</code></td><td>「栄養士 求人 新宿区」で検索される・集客の主力</td></tr>
+    <tr style="background:#fffdf5"><td><b>施設種別</b></td><td><b>絞り込み（同列）</b></td><td>✅ <code>/{職種}/shisetsu/{種別}/</code></td><td>「保育園 栄養士 求人」で検索される → <b>ページを持ちます</b></td></tr>
+    <tr style="background:#fffdf5"><td><b>こだわり条件</b></td><td><b>絞り込み（同列）</b></td><td>✅ 主要条件のみ <code>/{職種}/tag/{条件}/</code></td><td>「栄養士 土日休み 求人」で検索される → <b>主要条件のみ持ちます</b></td></tr>
+    <tr><td><b>雇用形態</b></td><td><b>絞り込み（同列）</b></td><td>❌ 検索条件のみ</td><td>単独での検索需要が小さい</td></tr>
+    <tr><td><b>給与</b></td><td><b>絞り込み（同列）</b></td><td>❌ 検索条件のみ</td><td>数値範囲はページ化に向かない</td></tr>
+    <tr style="background:#fff8f3"><td><b>雇用元</b>（直営／委託）</td><td><b>絞り込み（同列）★ご確認</b></td><td>❌ 検索条件のみ</td><td>雇用元を求人ページに出すのであれば、絞り込み軸にも出すのが自然です</td></tr>
+  </table></div>
+
+  <div class="ask">
+    <div class="lbl">ご確認いただきたい点</div>
+    <p>① <b>D-1: 案2（求人に最寄り駅を自動付与・住所から候補表示）</b>を入れる方向でよろしいでしょうか。
+    Phase1のスコープに関わりますので、他のご要望との優先順位も含めてご相談させてください。</p>
+    <p>② <b>D-3: 絞り込みUIは同列にします。</b>一方で施設種別とこだわり条件は
+    SEO用のURLも別途持たせたいのですが、よろしいでしょうか。</p>
+    <p>③ <b>雇用元（直営／委託）を絞り込み軸に足しますか。</b></p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ④ E-1                                                        -->
+<!-- ============================================================ -->
+<section class="tabpane">
+  <h1 class="q">E-1　参考にするサイトの方向性</h1>
+  <p class="qsub">デザインの方向性について、3案を比較してご提示します。</p>
+
+  <div class="note"><b>参考サイトのスクリーンショットではなく、実際にレンダリングした比較でご提示します。</b>
+  「ジョブメドレーはこういう見た目です」より、
+  <b>「おしごとらぼで作ったらこう見えます」</b>を3方向並べたほうが判断しやすいためです。
+  <b>同じ求人・同じ情報量</b>を3つの方向で組んでいます。</div>
+
+  <div class="sec"><span class="num">1</span><h2>3方向の比較（同じ求人カードを3スタイルで）</h2></div>
+  <div class="dir-grid">
+
+    <!-- 方向A -->
+    <div class="dir sA">
+      <div class="dh">方向A ジョブメドレー系<small>現デモの方向</small></div>
+      <div class="db">
+        <div class="m-card">
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:2px">
+            <span class="m-tag">正社員</span><span class="m-tag">病院</span><span class="m-tag">土日休み</span>
+          </div>
+          <div class="m-t">管理栄養士／栄養管理・献立作成（250床）</div>
+          <div style="font-size:11px;color:#54657a">みどり総合病院（さいたま市大宮区）</div>
+          <div class="m-meta">
+            <span>月給 <b>26.0〜32.0万円</b></span><span>大宮駅 徒歩8分</span><span>年間休日120日</span>
+          </div>
+          <div class="m-cta">詳細を見る</div>
+        </div>
+      </div>
+      <div class="memo">
+        <b>特徴</b>
+        <ul>
+          <li><b>情報密度が高い</b>。1画面に多くの求人が並ぶ</li>
+          <li>グリーン系＝清潔・安心。医療・介護・保育の求人媒体の定番配色</li>
+          <li>タグで条件が一目で分かる → <b>比較して選ぶ</b>行動に強い</li>
+          <li>写真がなくても成立する（＝<b>全求人に写真が揃っていなくても運用できる</b>）</li>
+          <li>SEO記事とカードが同じトーンで並べられる</li>
+        </ul>
+        <div style="margin-top:10px"><span class="reco">★ 弊社推奨</span></div>
+      </div>
+    </div>
+
+    <!-- 方向B -->
+    <div class="dir sB">
+      <div class="dh">方向B パソナ系<small>—</small></div>
+      <div class="db">
+        <div class="m-card">
+          <div class="m-ph">🏥</div>
+          <div class="m-in">
+            <div class="m-t">管理栄養士／栄養管理・献立作成<br>（250床の急性期病院）</div>
+            <div class="m-meta">
+              勤務地　さいたま市大宮区<br>
+              給　与　月給 26.0〜32.0万円<br>
+              雇用形態　正社員
+            </div>
+            <div class="m-cta">くわしく見る</div>
+          </div>
+        </div>
+      </div>
+      <div class="memo">
+        <b>特徴</b>
+        <ul>
+          <li><b>余白が広く、写真が主役</b>。1画面に載る求人数は少ない</li>
+          <li>紺＋赤＝信頼・実績。<b>人材紹介会社としての格</b>が出る</li>
+          <li>「じっくり読ませる」構成 → <b>企業ブランディングに強い</b></li>
+          <li>⚠️ <b>求人写真が必須</b>。全求人分の施設写真を用意できないと空白が目立ちます</li>
+          <li>⚠️ 1画面あたりの求人数が減り、<b>検索して比較する</b>体験は弱くなります</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 方向C -->
+    <div class="dir sC">
+      <div class="dh">方向C 両者の中間<small>—</small></div>
+      <div class="db">
+        <div class="m-card">
+          <div class="m-ph"></div>
+          <div class="m-in">
+            <div style="display:flex;gap:5px;margin-bottom:6px"><span class="m-tag">正社員</span><span class="m-tag">病院</span></div>
+            <div class="m-t">管理栄養士／栄養管理・献立作成（250床）</div>
+            <div class="m-meta">
+              <span>📍 さいたま市大宮区・大宮駅 徒歩8分</span>
+              <span>💰 月給 26.0〜32.0万円</span>
+            </div>
+            <div class="m-cta">詳細を見る</div>
+          </div>
+        </div>
+      </div>
+      <div class="memo">
+        <b>特徴</b>
+        <ul>
+          <li>カード型＋帯（写真がなくても色帯で成立）</li>
+          <li>ティール系＝清潔感と落ち着きの両立</li>
+          <li>情報密度は方向Aの8割程度</li>
+          <li>△ <b>「どちらでもない」ため参考にする実例が乏しく、デザインの判断基準を毎回作る必要があります</b>（＝認識のズレが起きやすい）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="num">2</span><h2>方向Aを推す理由（3つ）</h2></div>
+  <div class="tblwrap"><table class="d">
+    <tr><th>#</th><th>理由</th><th>根拠</th></tr>
+    <tr><td>1</td><td><b>写真が揃わなくても成立する</b></td>
+      <td>施設写真の有無が現時点で未確認です。方向B（写真主役）は写真がないと空白が目立ち、公開できる求人が限られます</td></tr>
+    <tr><td>2</td><td><b>「検索して比較する」行動に最適</b></td>
+      <td><b>場所から探す方が多い</b>とお聞きしています。エリアで絞って一覧を比較する動きが主なので、情報密度が高い方向Aが合います</td></tr>
+    <tr><td>3</td><td><b>SEOの主力ページと相性が良い</b></td>
+      <td>エリア×職種の掛け合わせページが集客の主力です。求人一覧＋SEO本文＋内部リンクを1ページに収める必要があり、方向Aの密度が要ります</td></tr>
+  </table></div>
+
+  <div class="warnbox"><b>方向Bをご希望の場合の前提。</b>
+  上記3つの理由（特に<b>写真の有無</b>）から方向Aを推しています。
+  <b>方向Bをご希望の場合は、全求人分の施設写真をご用意いただけるかが前提</b>になります。
+  ここをご確認させてください。</div>
+
+  <div class="sec"><span class="num">3</span><h2>カラー案（方向Aを選んだ場合）</h2></div>
+  <p class="qsub">既存「おしごとらぼ」のブランドカラーが未確認のため、3案でご提示します。</p>
+
+  <div class="pal">
+    <div class="ph"><span class="reco">★ 案1 推奨</span><b>グリーン（現デモと同じ）</b>
+      <span>清潔・安心・食。医療／介護／保育の求人媒体の定番</span></div>
+    <div class="sw">
+      <div style="background:#2bb673;color:#fff"><small>メイン</small>#2BB673</div>
+      <div style="background:#1f9d61;color:#fff"><small>メイン濃</small>#1F9D61</div>
+      <div style="background:#eafaf2;color:#1f9d61"><small>メイン淡</small>#EAFAF2</div>
+      <div style="background:#ff8a3d;color:#fff"><small>アクセント</small>#FF8A3D</div>
+      <div style="background:#1f2d3d;color:#fff"><small>文字</small>#1F2D3D</div>
+      <div style="background:#f5f8fa;color:#54657a"><small>背景</small>#F5F8FA</div>
+    </div>
+    <div style="font-size:12px;color:var(--ink-2);margin-top:10px">
+      ○ すでにデモで全27ページ組んでおり、<b>この配色のまま進められます</b><br>
+      △ 同業の求人媒体と似た配色になります（差別化は弱い）</div>
+  </div>
+
+  <div class="pal">
+    <div class="ph"><b>案2 温かみのあるオレンジ主体</b>
+      <span>「食」「あたたかさ」をより前に出す</span></div>
+    <div class="sw">
+      <div style="background:#f2803c;color:#fff"><small>メイン</small>#F2803C</div>
+      <div style="background:#d9662a;color:#fff"><small>メイン濃</small>#D9662A</div>
+      <div style="background:#fff2e8;color:#c4600a"><small>メイン淡</small>#FFF2E8</div>
+      <div style="background:#2bb673;color:#fff"><small>アクセント</small>#2BB673</div>
+      <div style="background:#2b2118;color:#fff"><small>文字</small>#2B2118</div>
+      <div style="background:#fbf8f5;color:#7a6a5c"><small>背景</small>#FBF8F5</div>
+    </div>
+    <div style="font-size:12px;color:var(--ink-2);margin-top:10px">
+      ○ 給食・食の現場という事業内容に最も近い印象。同業との差別化になります<br>
+      △ 「エラー」「警告」の赤とオレンジが近く、注意表示の設計に配慮が必要です</div>
+  </div>
+
+  <div class="pal">
+    <div class="ph"><b>案3 ティール ＋ 紺（信頼寄せ）</b>
+      <span>方向Bの「格」を、方向Aの構造に載せる中間案</span></div>
+    <div class="sw">
+      <div style="background:#0f8f7e;color:#fff"><small>メイン</small>#0F8F7E</div>
+      <div style="background:#0b6e61;color:#fff"><small>メイン濃</small>#0B6E61</div>
+      <div style="background:#e5f7f4;color:#0b6e61"><small>メイン淡</small>#E5F7F4</div>
+      <div style="background:#123a6b;color:#fff"><small>アクセント</small>#123A6B</div>
+      <div style="background:#16233a;color:#fff"><small>文字</small>#16233A</div>
+      <div style="background:#f4f7f9;color:#54657a"><small>背景</small>#F4F7F9</div>
+    </div>
+    <div style="font-size:12px;color:var(--ink-2);margin-top:10px">
+      ○ 人材紹介会社としての信頼感と、清潔感の両立<br>
+      △ デモの全ページを塗り替える作業が発生します</div>
+  </div>
+
+  <div class="ask">
+    <div class="lbl">ご確認いただきたい点</div>
+    <p>① <b>デザインの方向は A（ジョブメドレー系）で進めてよろしいでしょうか。</b>
+    方向B（パソナ系）をご希望の場合は、<b>全求人分の施設写真をご用意いただけるか</b>を
+    先に確認させてください。</p>
+    <p>② <b>カラーは案1〜3のどれにしますか。</b>案1（現デモと同じ）ならそのまま進められます。</p>
+    <p>③ <b>既存「おしごとらぼ」のロゴ・ブランドガイドライン</b>はございますか。
+    あれば、そちらに合わせます。</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+function go(i,btn){
+  document.querySelectorAll('.tabpane').forEach((p,n)=>p.classList.toggle('on',n===i));
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+</script>
+</body>
+</html>
