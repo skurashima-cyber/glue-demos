@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>矢羽根設計デモ ｜ 税理士法人マスエージェント様</title>
+<style>
+/* =====================================================================
+   demo-base.css — Glue Salesforce デモ 共通スタイル (SLDS Lightning 再現)
+   ---------------------------------------------------------------------
+   ・案件横断で共通の「chrome（ヘッダ/タブ/レコード作法）」と
+     「コンポーネントライブラリ」をここに集約する。
+   ・案件固有の色/業務独自パーツだけを各 index.html の <style> に追記する。
+   ・配布時は build.sh がこのファイルを <style> へインライン展開し、
+     単一HTML（ダブルクリックで開ける / 添付で送れる）にする。
+   ・出典: docs/aion/demo (基準実装) + tsubasa(帳票/フォーム) を統合。
+   ===================================================================== */
+
+:root{
+  --brand:#0176d3; --brand-dark:#014486; --brand-50:#eaf4fb;
+  --bg:#f3f3f3; --card:#ffffff; --border:#dddbda; --border-light:#f3f2f2;
+  --text:#181818; --text-2:#3e3e3c; --text-mute:#706e6b;
+  --success:#2e844a; --success-bg:#cdefc4; --warn:#fe9339; --warn-bg:#fef0e6;
+  --error:#ba0517; --error-bg:#fdd9d4; --info:#0176d3;
+  --shadow-card:0 2px 2px rgba(0,0,0,.05),0 0 0 1px rgba(0,0,0,.06);
+  --shadow-hover:0 2px 4px rgba(0,0,0,.1),0 0 0 1px rgba(0,0,0,.08);
+  --radius:.25rem;
+  /* 外部ツール色（案件で使う/使わないは任意。不要なら無視でOK） */
+  --chatwork:#e57400; --chatwork-bg:#fff4e6;
+  --claude:#cc785c; --claude-bg:#f5e9e2;
+  --sheets:#0f9d58; --sheets-bg:#e6f4ea;
+  /* 論点パネル */
+  --disc:#7a5cff; --disc-bg:#f1edff; --disc-border:#c9bcff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Salesforce Sans","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;
+  font-size:13px; color:var(--text); background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit; cursor:pointer}
+a{color:var(--brand); text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ===== Global Header ===== */
+.global-header{
+  background:linear-gradient(0deg,#032e61,#0176d3); height:48px;
+  display:flex; align-items:center; padding:0 16px; gap:12px;
+  position:sticky; top:0; z-index:1000;
+}
+.app-launcher{
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.1); border-radius:3px; cursor:pointer;
+}
+.app-launcher:hover{background:rgba(255,255,255,.2)}
+.app-launcher::before{
+  content:""; width:14px;height:14px;
+  background-image:
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px),
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px),
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px),
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px),
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px),
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px),
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px),
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px),
+    radial-gradient(circle, #fff 1.2px, transparent 1.4px);
+  background-size:5px 5px;
+  background-position:0 0,5px 0,10px 0,0 5px,5px 5px,10px 5px,0 10px,5px 10px,10px 10px;
+  background-repeat:no-repeat;
+}
+.app-name{
+  color:#fff; font-weight:700; font-size:14px;
+  padding-left:12px; border-left:1px solid rgba(255,255,255,.3);
+}
+.app-name .sub{font-weight:400; opacity:.8; margin-left:6px; font-size:12px}
+.gh-spacer{flex:1}
+.gh-search{
+  background:rgba(255,255,255,.95); border-radius:3px; padding:6px 12px;
+  width:380px; display:flex; align-items:center; gap:8px; font-size:13px;
+}
+.gh-search input{border:0;outline:0;flex:1;background:transparent;font-size:13px}
+.gh-actions{display:flex; gap:8px; align-items:center}
+.gh-actions .icon-btn{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  color:#fff; cursor:pointer; border-radius:50%;
+}
+.gh-actions .icon-btn:hover{background:rgba(255,255,255,.15)}
+.gh-user{
+  width:32px;height:32px;border-radius:50%;
+  background:#a5d8ff;color:#0b4a83;display:flex;align-items:center;justify-content:center;
+  font-weight:700; cursor:pointer; font-size:12px;
+}
+
+/* ===== App Bar (Tabs) ===== */
+.app-bar{
+  background:#fff; border-bottom:1px solid var(--border);
+  display:flex; align-items:stretch; padding:0 16px; height:40px;
+  position:sticky; top:48px; z-index:999; overflow-x:auto;
+}
+.app-bar .tab{
+  padding:0 16px; display:flex; align-items:center; gap:6px; cursor:pointer;
+  border-bottom:3px solid transparent; color:var(--text-2); font-weight:400;
+  font-size:13px; user-select:none; white-space:nowrap;
+}
+.app-bar .tab:hover{background:var(--brand-50)}
+.app-bar .tab.active{border-bottom-color:var(--brand); color:var(--brand); font-weight:700}
+
+/* ===== Main content ===== */
+.main{padding:12px 16px; max-width:1440px; margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+
+/* ===== Object Page Header ===== */
+.obj-header{
+  background:#fff; padding:12px 16px; border:1px solid var(--border); border-radius:var(--radius);
+  margin-bottom:8px;
+}
+.obj-header .row1{display:flex; align-items:center; gap:12px}
+.obj-icon{
+  width:40px;height:40px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  color:#fff; font-size:18px; font-weight:700;
+}
+/* 標準オブジェクトのアイコン色（SLDS準拠）。案件のカスタムobjは追記する */
+.obj-icon.account{background:#ff9a3c}
+.obj-icon.lead{background:#f88962}
+.obj-icon.opp{background:#fcb95b}
+.obj-icon.contact{background:#7f8de1}
+.obj-icon.quote{background:#a094ed}
+.obj-icon.order{background:#2e844a}
+.obj-icon.case{background:#f2cf5b}
+.obj-icon.report{background:#76ded9}
+.obj-icon.dashboard{background:#e6437f}
+.obj-icon.home{background:#0176d3}
+.obj-icon.custom{background:#5867e8}
+.obj-icon.chatwork{background:var(--chatwork)}
+.obj-icon.claude{background:var(--claude)}
+.obj-icon.sheets{background:var(--sheets)}
+.obj-title{flex:1}
+.obj-title .label{color:var(--text-mute); font-size:12px}
+.obj-title .name{font-size:18px; font-weight:700}
+.obj-actions{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+
+/* ===== Buttons ===== */
+.btn{
+  padding:6px 14px; border:1px solid var(--border); background:#fff;
+  border-radius:var(--radius); font-size:13px; color:var(--text);
+}
+.btn:hover{background:var(--border-light)}
+.btn.primary{background:var(--brand); color:#fff; border-color:var(--brand)}
+.btn.primary:hover{background:var(--brand-dark)}
+.btn.success{background:var(--success); color:#fff; border-color:var(--success)}
+.btn.success:hover{filter:brightness(0.95)}
+.btn.warn{background:var(--warn); color:#fff; border-color:var(--warn)}
+.btn.small{padding:3px 10px; font-size:12px}
+
+/* ===== Highlights Panel ===== */
+.highlights{
+  background:#fff; border:1px solid var(--border); border-radius:var(--radius);
+  padding:12px 16px; display:flex; gap:32px; margin-bottom:8px; flex-wrap:wrap;
+}
+.highlights .item{min-width:120px}
+.highlights .lbl{color:var(--text-mute); font-size:12px}
+.highlights .val{font-size:15px; font-weight:700; margin-top:2px}
+
+/* ===== Path Component (Sales/Stage Path) ===== */
+.path{
+  background:#fff; border:1px solid var(--border); border-radius:var(--radius);
+  margin-bottom:8px; display:flex; padding:0; overflow:hidden;
+}
+.path .stage{
+  flex:1; padding:10px 0; text-align:center; position:relative;
+  background:#ecebea; color:var(--text-2); font-size:12px; cursor:pointer;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%, 14px 50%);
+  margin-right:-12px; min-width:0;
+}
+.path .stage:first-child{ clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%) }
+.path .stage:last-child{
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 14px 50%); margin-right:0;
+}
+.path .stage.completed{background:#4bc076; color:#fff}
+.path .stage.current{background:var(--brand); color:#fff; font-weight:700}
+.path .stage:hover{filter:brightness(0.95)}
+.path-label{
+  display:flex; align-items:center; gap:6px;
+  padding:4px 12px 0; font-size:11px; color:var(--text-mute); background:#fff;
+  border:1px solid var(--border); border-bottom:0; border-radius:var(--radius) var(--radius) 0 0;
+}
+.path-label .badge{margin-left:auto}
+
+/* ===== Layout grids ===== */
+.two-col{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.two-col-3{display:grid; grid-template-columns:2fr 1fr; gap:8px}
+@media(max-width:1000px){ .two-col,.two-col-3{grid-template-columns:1fr} }
+
+/* ===== Card ===== */
+.card{
+  background:#fff; border:1px solid var(--border); border-radius:var(--radius);
+  margin-bottom:8px;
+}
+.card .card-head{
+  padding:8px 16px; border-bottom:1px solid var(--border-light);
+  display:flex; align-items:center; gap:8px; font-weight:700;
+}
+.card .card-head .actions{margin-left:auto; display:flex; gap:6px}
+.card .card-body{padding:12px 16px}
+.sec-title{
+  font-size:12px; font-weight:700; color:var(--text-2);
+  padding:8px 16px; background:#fafaf9; border-bottom:1px solid var(--border-light);
+}
+
+/* ===== Field rows (read view) ===== */
+.field-grid{display:grid; grid-template-columns:1fr 1fr; gap:0 24px}
+.field{padding:8px 0; border-bottom:1px solid var(--border-light)}
+.field .lbl{color:var(--text-mute); font-size:12px; margin-bottom:2px}
+.field .val{font-size:13px}
+.field.full{grid-column:1/-1}
+.field .val .ai-source{
+  display:inline-block; padding:1px 6px; border-radius:8px;
+  font-size:10px; background:var(--claude-bg); color:var(--claude);
+  margin-left:6px; vertical-align:middle;
+}
+.field .val .cw-source{ background:var(--chatwork-bg); color:var(--chatwork); }
+
+/* ===== Edit form (inline / modal) ===== */
+.form-2col{display:grid; grid-template-columns:1fr 1fr; gap:12px 24px}
+.form-row{display:flex; flex-direction:column; gap:4px}
+.form-row.full{grid-column:1/-1}
+.form-row label{font-size:12px; color:var(--text-2); font-weight:700}
+.form-row label .req{color:var(--error); margin-left:2px}
+.form-row input,.form-row select,.form-row textarea{
+  font-family:inherit; font-size:13px; padding:6px 10px;
+  border:1px solid var(--border); border-radius:var(--radius); background:#fff; color:var(--text);
+}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{
+  outline:0; border-color:var(--brand); box-shadow:0 0 0 2px var(--brand-50);
+}
+@media(max-width:700px){ .form-2col{grid-template-columns:1fr} }
+
+/* ===== Table ===== */
+.tbl{width:100%; border-collapse:collapse; background:#fff; font-size:13px}
+.tbl th{
+  background:#fafaf9; text-align:left; padding:8px 12px;
+  border-bottom:1px solid var(--border); font-weight:700; color:var(--text-2); font-size:12px;
+}
+.tbl td{padding:8px 12px; border-bottom:1px solid var(--border-light)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .num{text-align:right}
+.tbl tbody tr:hover{background:var(--brand-50)}
+.tbl .name-link{font-weight:700; cursor:pointer; color:var(--brand)}
+
+/* ===== Badges ===== */
+.badge{display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700}
+.badge.info{background:#e0f0fb; color:#0176d3}
+.badge.success{background:var(--success-bg); color:var(--success)}
+.badge.warn{background:var(--warn-bg); color:var(--warn)}
+.badge.error{background:var(--error-bg); color:var(--error)}
+.badge.gray{background:#ecebea; color:var(--text-mute)}
+.badge.cw{background:var(--chatwork-bg); color:var(--chatwork)}
+.badge.claude{background:var(--claude-bg); color:var(--claude)}
+.badge.sheets{background:var(--sheets-bg); color:var(--sheets)}
+
+/* ===== Related list card ===== */
+.related-card{
+  background:#fff; border:1px solid var(--border); border-radius:var(--radius); margin-bottom:8px;
+}
+.related-head{
+  padding:8px 16px; border-bottom:1px solid var(--border-light);
+  display:flex; align-items:center; gap:8px; font-weight:700;
+}
+.related-head .count{color:var(--text-mute); font-weight:400; font-size:12px}
+.related-head .actions{margin-left:auto}
+
+/* ===== Activity Timeline ===== */
+.timeline{padding:8px 16px}
+.tl-item{display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-light)}
+.tl-item:last-child{border-bottom:0}
+.tl-icon{
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff;
+}
+.tl-icon.call{background:#76ded9}
+.tl-icon.mail{background:#fcb95b}
+.tl-icon.meet{background:#0176d3}
+.tl-icon.task{background:#4bca81}
+.tl-icon.cw{background:var(--chatwork)}
+.tl-icon.claude{background:var(--claude)}
+.tl-body{flex:1}
+.tl-meta{font-size:11px; color:var(--text-mute)}
+.tl-title{font-weight:700; margin-top:1px}
+.tl-desc{color:var(--text-2); margin-top:2px; font-size:12px}
+
+/* ===== Dashboard widgets ===== */
+.dash-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:8px}
+.widget{background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px}
+.widget.span-3{grid-column:span 3}
+.widget.span-4{grid-column:span 4}
+.widget.span-6{grid-column:span 6}
+.widget.span-8{grid-column:span 8}
+.widget.span-12{grid-column:span 12}
+.w-title{font-weight:700; font-size:13px; margin-bottom:6px; color:var(--text-2)}
+.w-big{font-size:28px; font-weight:700; line-height:1.1}
+.w-sub{font-size:11px; color:var(--text-mute); margin-top:2px}
+.w-sub.up{color:var(--success)}
+.w-sub.down{color:var(--error)}
+
+/* Bar chart (CSS only) */
+.bar-chart-wrap{padding:8px 0 0}
+.bar-chart{display:flex; align-items:flex-end; gap:6px; height:160px; padding:0 4px}
+.bar-chart .bar{
+  flex:1; background:linear-gradient(0deg,#0176d3,#4faae8);
+  border-radius:3px 3px 0 0; position:relative; display:flex; flex-direction:column;
+  justify-content:flex-end; align-items:center; min-width:0;
+}
+.bar-chart .bar .v{font-size:10px; color:var(--text-2); position:absolute; top:-16px}
+.bar-chart .bar .x{font-size:10px; color:var(--text-mute); position:absolute; bottom:-18px}
+
+/* Donut (conic-gradient) */
+.donut-wrap{display:flex; align-items:center; gap:14px; padding:6px 0}
+.donut{width:120px; height:120px; border-radius:50%}
+.legend{flex:1; font-size:12px}
+.lg-item{display:flex; align-items:center; gap:6px; padding:3px 0}
+.lg-dot{width:10px; height:10px; border-radius:2px}
+
+/* ===== Misc ===== */
+.help-text{color:var(--text-mute); font-size:11px}
+.crumb{font-size:11px; color:var(--text-mute); margin-bottom:4px}
+.crumb a{color:var(--text-mute); cursor:pointer}
+.crumb .sep{margin:0 4px; color:#bbb}
+
+/* ===== Callout (in-screen note) ===== */
+.callout{
+  background:var(--brand-50); border-left:3px solid var(--brand);
+  padding:10px 14px; border-radius:0 var(--radius) var(--radius) 0;
+  margin-bottom:10px; font-size:12px;
+}
+.callout.warn{background:var(--warn-bg); border-color:var(--warn)}
+.callout.success{background:var(--success-bg); border-color:var(--success)}
+.callout strong{font-weight:700}
+
+/* ===== Modal ===== */
+.modal-bg{
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.4);
+  z-index:2000; align-items:center; justify-content:center; padding:24px;
+}
+.modal-bg.active{display:flex}
+.modal{
+  background:#fff; border-radius:6px; max-width:880px; width:100%;
+  max-height:90vh; overflow:auto; box-shadow:0 8px 24px rgba(0,0,0,.2);
+}
+.modal-head{padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center}
+.modal-head .title{font-weight:700; font-size:15px; flex:1}
+.modal-head .close{cursor:pointer; font-size:20px; color:var(--text-mute)}
+.modal-body{padding:20px}
+.modal-foot{padding:12px 20px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:#181818; color:#fff; padding:12px 20px; border-radius:6px; font-size:13px;
+  box-shadow:0 4px 16px rgba(0,0,0,.3); opacity:0; pointer-events:none;
+  transition:opacity .25s, transform .25s; z-index:3000; max-width:90vw;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.toast.success{background:#1b5e2f}
+
+/* ===== 帳票 / PDF プレビュー (見積書・請求書・契約書) ===== */
+.pdf-toolbar{
+  background:#3c3c3c; color:#eee; padding:6px 14px; font-size:12px;
+  display:flex; align-items:center; gap:12px; border-radius:6px 6px 0 0;
+}
+.pdf-page{
+  background:#fff; max-width:760px; margin:0 auto; padding:48px 56px;
+  box-shadow:0 2px 12px rgba(0,0,0,.15); font-size:13px; color:#222;
+}
+.pdf-hdr{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:28px}
+.pdf-title{font-size:24px; font-weight:700; letter-spacing:.3em; border-bottom:2px solid #222; padding-bottom:6px}
+.pdf-tbl{width:100%; border-collapse:collapse; margin:18px 0; font-size:12px}
+.pdf-tbl th{background:#333; color:#fff; padding:8px 10px; text-align:left}
+.pdf-tbl td{padding:8px 10px; border-bottom:1px solid #ddd}
+.pdf-tbl .num{text-align:right}
+.pdf-amount-box{border:2px solid #222; padding:10px 16px; display:inline-block; font-size:18px; font-weight:700; margin:10px 0}
+.pdf-stamp{
+  width:64px;height:64px;border:2px solid #d33;border-radius:50%;color:#d33;
+  display:flex;align-items:center;justify-content:center;font-size:11px;transform:rotate(-12deg);
+}
+.pdf-bottom{margin-top:32px; font-size:11px; color:#555}
+
+/* =====================================================================
+   論点パネル (.disc) ── デモ品質の核
+   画面ごとに「出典 / 論点 / ※要確認」を載せ、デモを意思決定文書にする。
+   bodyに class="disc-on" が付くと表示。右下トグルで全画面ON/OFF。
+   プレゼン中は隠し(clean)、FB/レビュー時は表示に切替える運用。
+   ===================================================================== */
+.disc{display:none}
+body.disc-on .disc{
+  display:block;
+  background:var(--disc-bg); border:1px solid var(--disc-border); border-left:4px solid var(--disc);
+  border-radius:0 var(--radius) var(--radius) 0; padding:10px 14px; margin:0 0 10px; font-size:12px;
+}
+.disc .disc-q{font-weight:700; color:var(--disc); margin-bottom:3px}
+.disc .disc-src{font-size:11px; color:var(--text-mute); margin-bottom:4px}
+.disc .disc-src::before{content:"📎 出典: "}
+.disc .disc-body{color:var(--text-2); line-height:1.6}
+.disc .disc-flag{
+  display:inline-block; background:var(--warn-bg); color:var(--warn);
+  font-weight:700; font-size:11px; padding:1px 7px; border-radius:8px; margin:0 2px;
+}
+.disc .disc-flag::before{content:"※要確認 "}
+/* 論点トグル（右下固定） */
+.disc-toggle{
+  position:fixed; right:18px; bottom:18px; z-index:2500;
+  background:var(--disc); color:#fff; border:0; border-radius:20px;
+  padding:9px 16px; font-size:13px; font-weight:700; box-shadow:0 3px 10px rgba(0,0,0,.25);
+}
+.disc-toggle:hover{filter:brightness(1.05)}
+body.disc-on .disc-toggle{background:#fff; color:var(--disc); border:1px solid var(--disc-border)}
+
+/* ===== Responsive ===== */
+@media(max-width:1000px){
+  .dash-grid{grid-template-columns:repeat(4,1fr)}
+  .widget.span-3,.widget.span-4{grid-column:span 2}
+  .widget.span-6,.widget.span-8,.widget.span-12{grid-column:span 4}
+  .gh-search{display:none}
+}
+
+</style>
+<style>
+.obj-icon.kaikei{background:#3ba755}
+.obj-icon.kessan{background:#1b7f4b}
+.obj-icon.nenji{background:#e8a33d}
+.obj-icon.memo{background:#5867e8}
+
+/* 操作パネル */
+.ctrl{background:#fff;border:1px solid #dddbda;border-radius:6px;padding:10px 14px;margin-bottom:8px;display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+.ctrl .grp{display:flex;align-items:center;gap:8px;font-size:12px;color:#514f4d}
+.ctrl label{font-weight:700;white-space:nowrap}
+.ctrl select{font:inherit;font-size:12px;padding:4px 8px;border:1px solid #c9c7c5;border-radius:4px;background:#fff}
+.ctrl .hint{font-size:11px;color:#706e6b}
+
+/* 12ヶ月の矢羽根 */
+.ym-wrap{background:#fff;border:1px solid #dddbda;border-radius:6px;padding:12px 14px;margin-bottom:8px;overflow-x:auto}
+.ym-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ym-head b{font-size:13px}
+.ym-head .sub{font-size:11px;color:#706e6b}
+.ym{display:flex;min-width:900px}
+.ym .cell{flex:1;min-width:0;padding:9px 0 8px;text-align:center;background:#ecebea;color:#514f4d;cursor:pointer;
+  clip-path:polygon(0 0,calc(100% - 11px) 0,100% 50%,calc(100% - 11px) 100%,0 100%,11px 50%);margin-right:-9px}
+.ym .cell:first-child{clip-path:polygon(0 0,calc(100% - 11px) 0,100% 50%,calc(100% - 11px) 100%,0 100%)}
+.ym .cell:last-child{clip-path:polygon(0 0,100% 0,100% 100%,0 100%,11px 50%);margin-right:0}
+.ym .cell .n{display:block;font-size:11px;font-weight:700;line-height:1.3}
+.ym .cell .m{display:block;font-size:10px;opacity:.8;line-height:1.3}
+.ym .cell.done{background:#4bc076;color:#fff}
+.ym .cell.now{background:#0176d3;color:#fff}
+.ym .cell.off{background:#f6f6f6;color:#b9b7b5}
+.ym .cell.kessan-trigger .m{font-weight:700}
+.ym-mark{display:flex;min-width:900px;margin-top:4px}
+.ym-mark .slot{flex:1;min-width:0;text-align:center;margin-right:-9px}
+.ym-mark .slot:last-child{margin-right:0}
+.ym-mark .tag{display:inline-block;font-size:10px;line-height:1.4;color:#1b7f4b;background:#eaf7ee;border:1px solid #b7e0c6;border-radius:10px;padding:1px 7px;white-space:nowrap}
+.ym .cell:hover{filter:brightness(.95)}
+
+/* フェーズ下の入力欄 */
+.under{background:#fff;border:1px solid #dddbda;border-radius:6px;padding:14px 16px;margin-bottom:8px}
+.under h4{margin:0 0 4px;font-size:13px}
+.under .lead{font-size:12px;color:#706e6b;margin:0 0 12px}
+.req-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+@media(max-width:900px){.req-grid{grid-template-columns:1fr}}
+.req{display:flex;flex-direction:column;gap:4px}
+.req .lbl{font-size:11px;color:#706e6b}
+.req .lbl .must{color:#c23934;font-weight:700}
+.req input,.req select,.req textarea{font:inherit;font-size:12px;padding:6px 8px;border:1px solid #c9c7c5;border-radius:4px;background:#fff}
+.req.bad input,.req.bad select{border-color:#c23934;background:#fff6f5}
+.req .err{font-size:11px;color:#c23934;display:none}
+.req.bad .err{display:block}
+.adv{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.blocked{background:#fdf1f0;border:1px solid #f5c6c2;border-left:4px solid #c23934;border-radius:0 6px 6px 0;padding:10px 14px;font-size:12px;color:#8a1c15;margin-bottom:12px;display:none}
+.blocked.on{display:block}
+.reason-box{display:none;margin-top:10px;padding:10px 12px;background:#fff7e6;border:1px solid #ffe1a8;border-radius:6px}
+.reason-box.on{display:block}
+.reason-box .lbl{font-size:11px;color:#7a5b00;font-weight:700;display:block;margin-bottom:4px}
+.reason-box select{width:100%;max-width:420px}
+
+/* 論点マーカー */
+.q{background:#f4f6ff;border:1px solid #d6ddff;border-left:4px solid #5867e8;border-radius:0 6px 6px 0;padding:10px 14px;font-size:12px;color:#2f3a8c;margin:0 0 8px}
+.q b{display:block;margin-bottom:2px}
+
+.mini{font-size:11px;color:#706e6b}
+.tbl td .pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px}
+.pill.g{background:#eaf7ee;color:#1b7f4b}
+.pill.y{background:#fff7e6;color:#7a5b00}
+.pill.r{background:#fdf1f0;color:#c23934}
+.pill.b{background:#eef4ff;color:#0176d3}
+</style>
+</head>
+<body>
+
+<div class="global-header">
+  <div class="app-launcher">⠿</div>
+  <div class="app-name">大阪支社</div>
+  <div class="gh-spacer"></div>
+  <div class="gh-user">担当A</div>
+</div>
+
+<div class="app-bar">
+  <div class="tab active" data-go="p-kaikei">📗 月次会計の矢羽根</div>
+  <div class="tab" data-go="p-kessan">📘 決算の矢羽根</div>
+  <div class="tab" data-go="p-nenji">📙 年次イベント</div>
+  <div class="tab" data-go="p-memo">📓 この画面で見ていただきたいこと</div>
+</div>
+
+<div class="main">
+
+<!-- ============ 月次会計 ============ -->
+<div class="page active" id="p-kaikei">
+
+  <div class="obj-header">
+    <div class="row1">
+      <div class="obj-icon kaikei">月</div>
+      <div class="obj-title">
+        <small>月次会計</small>
+        <h1 id="k-title">株式会社さくら製作所　2026年度</h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="q">
+    <b>9/1にご決定いただいた点</b>
+    矢羽根は暦月ではなく「1ヶ月目〜12ヶ月目」で持ちます。1ヶ月目は決算月の翌月です。下の決算月を切り替えると、同じ矢羽根のまま実際の月だけが入れ替わります。
+  </div>
+
+  <div class="ctrl">
+    <div class="grp">
+      <label for="c-kessan">決算月</label>
+      <select id="c-kessan">
+        <option value="3">3月決算</option>
+        <option value="9">9月決算</option>
+        <option value="12">12月決算</option>
+      </select>
+    </div>
+    <div class="grp">
+      <label for="c-freq">契約頻度</label>
+      <select id="c-freq">
+        <option value="1">毎月</option>
+        <option value="3">3ヶ月ごと</option>
+        <option value="6">半年ごと</option>
+        <option value="12">年一</option>
+      </select>
+    </div>
+    <div class="grp">
+      <label for="c-now">現在</label>
+      <select id="c-now"></select>
+    </div>
+    <div class="hint">頻度を変えると、対象外の月がグレーになります</div>
+  </div>
+
+  <div class="ym-wrap">
+    <div class="ym-head">
+      <b>月次業務の進捗</b>
+      <span class="sub" id="k-sub"></span>
+    </div>
+    <div class="ym" id="k-path"></div>
+    <div class="ym-mark" id="k-mark"></div>
+  </div>
+
+  <div class="under">
+    <h4 id="k-under-title">5ヶ月目（8月）の作業</h4>
+    <p class="lead">矢羽根に載せない細かい作業は、このようにフェーズの下に置きます。日付が埋まっているかどうかで実態を追えるので、記録の粒度は落ちません。</p>
+
+    <div class="blocked" id="k-blocked"></div>
+
+    <div class="req-grid">
+      <div class="req" id="f-meet">
+        <span class="lbl">打ち合わせ日 <span class="must">*必須</span></span>
+        <input type="date" id="i-meet">
+        <span class="err">次の月へ進むには入力が必要です</span>
+      </div>
+      <div class="req" id="f-rec">
+        <span class="lbl">実施記録 <span class="must">*必須</span></span>
+        <select id="i-rec">
+          <option value="">選択してください</option>
+          <option>訪問して実施</option>
+          <option>オンラインで実施</option>
+          <option>資料のやり取りのみ</option>
+        </select>
+        <span class="err">次の月へ進むには入力が必要です</span>
+      </div>
+      <div class="req">
+        <span class="lbl">資料受領日（任意）</span>
+        <input type="date">
+      </div>
+    </div>
+
+    <div class="adv">
+      <button class="btn primary" id="btn-next">次の月へ進む</button>
+      <button class="btn" id="btn-notdone">今月は実施しなかった</button>
+      <span class="mini">後戻りはできません。進める条件を絞ることで、報告の曖昧さをなくす設計です。</span>
+    </div>
+
+    <div class="reason-box" id="k-reason">
+      <span class="lbl">未実施の理由</span>
+      <select id="i-reason">
+        <option value="">選択してください</option>
+        <option>先方のご都合で延期</option>
+        <option>資料が届かなかった</option>
+        <option>契約上、当月は対象外</option>
+        <option>担当者の都合</option>
+        <option>その他</option>
+      </select>
+      <p class="mini" style="margin:8px 0 0">理由を残しておくと、あとから「なぜ止まったのか」をレポートで炙り出せます。</p>
+    </div>
+  </div>
+
+  <div class="q">
+    <b>決めていただきたいこと</b>
+    1ヶ月目から12ヶ月目まで、それぞれの月にどの業務が入るのか。ここが埋まると、上の入力欄が月ごとに変わります。次回9/11までに整理をお願いしております。
+  </div>
+
+</div>
+
+<!-- ============ 決算 ============ -->
+<div class="page" id="p-kessan">
+
+  <div class="obj-header">
+    <div class="row1">
+      <div class="obj-icon kessan">決</div>
+      <div class="obj-title">
+        <small>決算</small>
+        <h1>株式会社さくら製作所　2026年3月期</h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="q">
+    <b>9/1にご決定いただいた点</b>
+    決算は月次と<b style="display:inline">別の矢羽根</b>にします。月次に決算を混ぜると、担当者ごとの月次の負荷が見えなくなるためです。月次が10ヶ月目に入った時点で、この決算レコードが自動で作られます。
+  </div>
+
+  <div class="callout" id="ks-origin">
+    このレコードは「株式会社さくら製作所 2026年度」の月次が <b>10ヶ月目（2027年1月）</b> に入った時点で自動作成されました。
+  </div>
+
+  <div class="path-label">進捗 <span class="badge info">巡回チェック</span></div>
+  <div class="path">
+    <div class="stage completed">1. 事前検討</div>
+    <div class="stage current">2. 巡回チェック</div>
+    <div class="stage">3. 申告書チェック</div>
+    <div class="stage">4. 申告・納品</div>
+    <div class="stage">5. 報酬改定確認</div>
+  </div>
+
+  <div class="under">
+    <h4>フェーズの下に置く項目</h4>
+    <p class="lead">8/7にご指摘いただいた「決算報告は打ち合わせのタイミングで前後するので矢羽根に入れない」を反映しています。電子申告日も同じ扱いです。</p>
+    <div class="req-grid">
+      <div class="req"><span class="lbl">決算報告日</span><input type="date"></div>
+      <div class="req"><span class="lbl">電子申告日</span><input type="date"></div>
+      <div class="req"><span class="lbl">納品日</span><input type="date"></div>
+    </div>
+    <p class="mini">一番気にされていた「巡回チェックと申告書チェックがどこまで進んだか」は、矢羽根の2番目と3番目で分けて見えるようにしています。</p>
+  </div>
+
+  <div class="q">
+    <b>ご確認いただきたいこと</b>
+    この5つで過不足がないか。「5. 報酬改定確認」は7/31に「決算の最終ステップに来年度の報酬変更の有無を組み込む」と決めた経緯があるため残しています。
+  </div>
+
+</div>
+
+<!-- ============ 年次イベント ============ -->
+<div class="page" id="p-nenji">
+
+  <div class="obj-header">
+    <div class="row1">
+      <div class="obj-icon nenji">年</div>
+      <div class="obj-title"><small>その他業務</small><h1>年次イベント（日付ベース）</h1></div>
+    </div>
+    <div class="obj-actions" style="margin-top:10px">
+      <button class="btn primary" id="btn-irr">＋ イレギュラー業務を登録</button>
+    </div>
+  </div>
+
+  <div class="q">
+    <b>9/1にご決定いただいた点</b>
+    年末調整や予定納税は矢羽根に紐付けません。フェーズに紐付けると、そのフェーズに到達するまでタスクが発生せず、実際の期限に間に合わなくなるためです。<b style="display:inline">日付が来たら自動で立つ</b>形にします。例外は手入力で足せます。
+  </div>
+
+  <div class="card">
+    <div class="card-head">この先に自動で立つタスク</div>
+    <table class="tbl">
+      <thead><tr><th>業務</th><th>関与先</th><th>生成日</th><th>期限</th><th>担当</th><th>状態</th></tr></thead>
+      <tbody>
+        <tr><td>年末調整</td><td>株式会社さくら製作所</td><td>2026-11-01</td><td>2027-01-31</td><td>担当A</td><td><span class="pill b">自動</span></td></tr>
+        <tr><td>年末調整</td><td>有限会社みどり商店</td><td>2026-11-01</td><td>2027-01-31</td><td>担当B</td><td><span class="pill b">自動</span></td></tr>
+        <tr><td>予定納税（第1期）</td><td>株式会社さくら製作所</td><td>2026-06-15</td><td>2026-07-31</td><td>担当A</td><td><span class="pill g">完了</span></td></tr>
+        <tr><td>予定納税（第2期）</td><td>株式会社さくら製作所</td><td>2026-10-15</td><td>2026-11-30</td><td>担当A</td><td><span class="pill b">自動</span></td></tr>
+        <tr><td>社会保険 算定基礎届</td><td>有限会社みどり商店</td><td>2026-06-20</td><td>2026-07-10</td><td>担当C</td><td><span class="pill g">完了</span></td></tr>
+        <tr><td>償却資産申告</td><td>株式会社あおば工業</td><td>2026-12-15</td><td>2027-01-31</td><td>担当B</td><td><span class="pill b">自動</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="q">
+    <b>決めていただきたいこと</b>
+    ここに並べるべき業務の一覧と、それぞれ「いつ生成していつが期限か」。8/7の確認事項④「その他業務の範囲」がまだ未回答のままです。
+  </div>
+
+</div>
+
+<!-- ============ 設計メモ ============ -->
+<div class="page" id="p-memo">
+  <div class="obj-header">
+    <div class="row1">
+      <div class="obj-icon memo">メ</div>
+      <div class="obj-title"><small>9/1 お打ち合わせの反映</small><h1>この画面で見ていただきたいこと</h1></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">9/1に決まったこと（この画面に入れたもの）</div>
+    <table class="tbl">
+      <thead><tr><th style="width:34%">決まったこと</th><th>画面での見え方</th></tr></thead>
+      <tbody>
+        <tr><td>矢羽根は暦月ではなく1ヶ月目〜12ヶ月目</td><td>月次会計タブ。決算月を切り替えると実際の月だけが入れ替わります</td></tr>
+        <tr><td>月次と決算は別の矢羽根</td><td>タブが分かれています。決算は10ヶ月目で自動生成される想定です</td></tr>
+        <tr><td>次のフェーズへ進むには必須項目の入力が必要</td><td>打ち合わせ日か実施記録が空のまま「次の月へ進む」を押すと止まります</td></tr>
+        <tr><td>未実施の場合は理由を残す</td><td>「今月は実施しなかった」を押すと理由欄が出ます</td></tr>
+        <tr><td>契約頻度で進み方が変わる</td><td>頻度を3ヶ月ごとにすると、対象外の月がグレーになります</td></tr>
+        <tr><td>年次イベントは日付ベースでタスク生成</td><td>年次イベントタブ。矢羽根には紐付けていません</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-head">こちらから確認させていただきたいこと</div>
+    <table class="tbl">
+      <thead><tr><th style="width:34%">論点</th><th>Glueの考え</th></tr></thead>
+      <tbody>
+        <tr><td>12ヶ月を1レコードで持つか、月ごとに12レコードにするか</td><td>矢羽根で表現する以上、<b style="display:inline">1レコード＝1年・12ヶ月分</b>が素直だと考えています。ただし月ごとの担当者や金額が変わる場合は12レコードのほうが扱いやすくなります</td></tr>
+        <tr><td>12個の矢羽根は画面上で細かすぎないか</td><td>この画面が実際の幅です。細かいと感じられる場合は、四半期でまとめて表示する案もあります</td></tr>
+        <tr><td>1ヶ月目〜12ヶ月目それぞれの業務内容</td><td>次回9/11までに整理をお願いしております。ここが埋まらないと入力欄の中身が決まりません</td></tr>
+        <tr><td>決算レコードの自動生成は10ヶ月目でよいか</td><td>10ヶ月目を起点としています。早い／遅いのご感覚があればお聞かせください</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="mini">※ 会社名・担当者名はすべて架空のものです。</p>
+</div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== タブ ===== */
+function show(id){
+  var tab=document.querySelector('.app-bar .tab[data-go="'+id+'"]');
+  var page=document.getElementById(id);
+  if(!tab||!page) return;
+  document.querySelectorAll('.app-bar .tab').forEach(function(x){x.classList.remove('active')});
+  document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active')});
+  tab.classList.add('active'); page.classList.add('active');
+}
+document.querySelectorAll('.app-bar .tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    show(t.dataset.go);
+    if(history.replaceState) history.replaceState(null,'','#'+t.dataset.go.replace('p-',''));
+    window.scrollTo(0,0);
+  });
+});
+/* URLの # で直接そのタブを開けるようにする（メールで個別に案内するため） */
+if(location.hash) show('p-'+location.hash.slice(1));
+
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show','success');
+  setTimeout(function(){el.classList.remove('show')},3200);
+}
+
+/* ===== 状態 ===== */
+var S={kessanMonth:3, freq:1, now:5, kessanMade:false};
+var KESSAN_TRIGGER=10;
+
+/* 相対月 n（1〜12）が実際の何月か。1ヶ月目＝決算月の翌月 */
+function actualMonth(n){ return ((S.kessanMonth + n - 1) % 12) + 1; }
+/* 契約頻度の対象月か */
+function isTarget(n){ return (n - 1) % S.freq === 0; }
+
+var elPath=document.getElementById('k-path');
+var elMark=document.getElementById('k-mark');
+var elNow=document.getElementById('c-now');
+
+for(var i=1;i<=12;i++){
+  var o=document.createElement('option'); o.value=i; o.textContent=i+'ヶ月目'; elNow.appendChild(o);
+}
+elNow.value=S.now;
+
+function render(){
+  /* 矢羽根 */
+  elPath.innerHTML='';
+  for(var n=1;n<=12;n++){
+    var c=document.createElement('div');
+    c.className='cell';
+    if(!isTarget(n)) c.classList.add('off');
+    else if(n < S.now) c.classList.add('done');
+    else if(n === S.now) c.classList.add('now');
+    if(n === KESSAN_TRIGGER) c.classList.add('kessan-trigger');
+    c.innerHTML='<span class="n">'+n+'ヶ月目</span><span class="m">'+actualMonth(n)+'月</span>';
+    c.title = n===KESSAN_TRIGGER ? 'ここで決算レコードが自動生成されます' : '';
+    elPath.appendChild(c);
+  }
+
+  /* 決算レコードが生成される位置の注記 */
+  elMark.innerHTML='';
+  for(var m=1;m<=12;m++){
+    var s2=document.createElement('div');
+    s2.className='slot';
+    if(m===KESSAN_TRIGGER) s2.innerHTML='<span class="tag">↑ 決算レコードを自動作成</span>';
+    elMark.appendChild(s2);
+  }
+
+  document.getElementById('k-sub').textContent =
+    S.kessanMonth+'月決算　→　1ヶ月目は'+actualMonth(1)+'月　／　決算レコードの自動作成は'+KESSAN_TRIGGER+'ヶ月目';
+
+  document.getElementById('k-under-title').textContent =
+    S.now+'ヶ月目（'+actualMonth(S.now)+'月）の作業';
+
+  /* 対象外の月なら入力欄を閉じる */
+  var off = !isTarget(S.now);
+  var b=document.getElementById('k-blocked');
+  if(off){
+    b.className='blocked on';
+    b.innerHTML='契約頻度が「'+document.getElementById('c-freq').selectedOptions[0].text+'」のため、'+S.now+'ヶ月目は対象外です。この月は入力を求めません。';
+  } else {
+    b.className='blocked';
+  }
+  document.getElementById('btn-next').disabled=false;
+}
+
+function clearErr(){
+  ['f-meet','f-rec'].forEach(function(id){ document.getElementById(id).classList.remove('bad') });
+}
+
+document.getElementById('c-kessan').addEventListener('change',function(){ S.kessanMonth=+this.value; render() });
+document.getElementById('c-freq').addEventListener('change',function(){ S.freq=+this.value; render() });
+document.getElementById('c-now').addEventListener('change',function(){
+  S.now=+this.value; clearErr(); document.getElementById('k-reason').classList.remove('on'); render();
+});
+
+/* 次の月へ進む */
+document.getElementById('btn-next').addEventListener('click',function(){
+  clearErr();
+  if(isTarget(S.now)){
+    var ng=false;
+    if(!document.getElementById('i-meet').value){ document.getElementById('f-meet').classList.add('bad'); ng=true }
+    if(!document.getElementById('i-rec').value){ document.getElementById('f-rec').classList.add('bad'); ng=true }
+    if(ng){
+      var b=document.getElementById('k-blocked');
+      b.className='blocked on';
+      b.innerHTML='<b>次の月へ進めません。</b>　打ち合わせ日と実施記録が入力されていません。実施していない場合は「今月は実施しなかった」から理由をお選びください。';
+      return;
+    }
+  }
+  if(S.now>=12){ toast('12ヶ月目です。この年度は完了しています'); return }
+
+  S.now++;
+  document.getElementById('c-now').value=S.now;
+  document.getElementById('i-meet').value='';
+  document.getElementById('i-rec').value='';
+  document.getElementById('k-reason').classList.remove('on');
+  document.getElementById('i-reason').value='';
+  render();
+
+  if(S.now===KESSAN_TRIGGER && !S.kessanMade){
+    S.kessanMade=true;
+    toast('10ヶ月目に入りました。決算レコードを自動作成しました（決算タブでご確認ください）');
+  } else {
+    toast(S.now+'ヶ月目（'+actualMonth(S.now)+'月）へ進みました');
+  }
+});
+
+/* 今月は実施しなかった */
+document.getElementById('btn-notdone').addEventListener('click',function(){
+  clearErr();
+  document.getElementById('k-blocked').className='blocked';
+  document.getElementById('k-reason').classList.add('on');
+  document.getElementById('i-reason').focus();
+});
+
+document.getElementById('i-reason').addEventListener('change',function(){
+  if(!this.value) return;
+  toast('未実施の理由を記録しました。この状態でも次の月へ進めます');
+});
+
+document.getElementById('btn-irr').addEventListener('click',function(){
+  toast('イレギュラーな業務はここから手入力で追加します');
+});
+
+render();
+</script>
+</body>
+</html>
