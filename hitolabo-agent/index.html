@@ -531,10 +531,10 @@ img{max-width:100%}
       <h1>給食・栄養の仕事なら、<span class="hl">おしごとらぼ</span>。</h1>
       <p>管理栄養士・栄養士・調理師・調理員。職種とエリアから、あなたにぴったりの求人へ。</p>
       <div class="searchbox">
-        <div class="fld"><label>職種</label><select><option>すべての職種</option><option>管理栄養士</option><option>栄養士</option><option>調理師</option><option>調理員</option></select></div>
-        <div class="fld"><label>エリア</label><select><option>すべてのエリア</option><option>東京都</option><option>神奈川県</option><option>埼玉県</option><option>千葉県</option><option>大阪府</option></select></div>
-        <div class="fld"><label>こだわり</label><select><option>指定なし</option><option>未経験OK</option><option>日勤のみ</option><option>土日休み</option><option>賞与あり</option></select></div>
-        <button class="btn lg" onclick="sgo('search')">検索</button>
+        <div class="fld"><label>職種</label><select id="topJob"><option>すべての職種</option><option>管理栄養士</option><option>栄養士</option><option>調理師</option><option>調理員</option></select></div>
+        <div class="fld"><label>エリア</label><select id="topArea"><option>すべてのエリア</option><option>東京都</option><option>神奈川県</option><option>埼玉県</option><option>千葉県</option><option>大阪府</option></select></div>
+        <div class="fld"><label>こだわり</label><select id="topCond"><option>指定なし</option><option>未経験OK</option><option>日勤のみ</option><option>土日休み</option><option>賞与あり</option></select></div>
+        <button class="btn lg" onclick="goSearchFromTop()">検索</button>
       </div>
     </div>
 
@@ -548,7 +548,7 @@ img{max-width:100%}
     <div class="blk">
       <div class="blk-h"><span class="en">Job type</span><h2>お仕事の種類から探す</h2></div>
       <div class="cat2-grid">
-        <div class="cat2" onclick="sgo('shoku')">
+        <div class="cat2" onclick="sgo('shoku', null, {job:'管理栄養士'})">
           <div class="hd"><span class="ic">🍱</span><div><div class="nm">給食・栄養のお仕事</div><div class="ct">4,120件</div></div></div>
           <div class="quals">
             <span class="q">管理栄養士 1,240</span><span class="q">栄養士 1,510</span>
@@ -556,7 +556,7 @@ img{max-width:100%}
           </div>
           <div class="u">/kyushoku/</div>
         </div>
-        <div class="cat2" onclick="sgo('shoku')">
+        <div class="cat2" onclick="sgo('shoku', null, {job:'保育士'})">
           <div class="hd"><span class="ic">🧸</span><div><div class="nm">保育のお仕事</div><div class="ct">760件</div></div></div>
           <div class="quals">
             <span class="q">保育士 520</span><span class="q">幼稚園教諭 140</span>
@@ -674,10 +674,10 @@ img{max-width:100%}
       <h1>あなたらしく働ける、<span class="hl">栄養士・調理師</span>の仕事に出会う。</h1>
       <p>病院・保育園・社員食堂・委託給食。エリアと職種で、ぴったりの求人を。</p>
       <div class="searchbox">
-        <div class="fld"><label>職種</label><select><option>栄養士</option><option>管理栄養士</option><option>調理師</option><option>調理スタッフ</option><option>一般総合職（〜35歳）</option></select></div>
-        <div class="fld"><label>エリア</label><select><option>関東（東京・神奈川・埼玉・千葉）</option><option>関西</option><option>東海</option><option>九州</option></select></div>
-        <div class="fld"><label>こだわり</label><select><option>未経験OK</option><option>日勤のみ</option><option>賞与あり</option><option>残業少なめ</option></select></div>
-        <button class="btn lg" onclick="sgo('search')">検索</button>
+        <div class="fld"><label>職種</label><select id="searchJob"><option>栄養士</option><option>管理栄養士</option><option>調理師</option><option>調理スタッフ</option><option>一般総合職（〜35歳）</option></select></div>
+        <div class="fld"><label>エリア</label><select id="searchArea"><option>関東（東京・神奈川・埼玉・千葉）</option><option>関西</option><option>東海</option><option>九州</option></select></div>
+        <div class="fld"><label>こだわり</label><select id="searchCond"><option>未経験OK</option><option>日勤のみ</option><option>賞与あり</option><option>残業少なめ</option></select></div>
+        <button class="btn lg" onclick="goSearchFromSearch()">検索</button>
       </div>
     </div>
     <div class="chips">
@@ -892,11 +892,11 @@ img{max-width:100%}
       <h1><span class="hl">給食・栄養</span>のお仕事</h1>
       <p>病院・高齢者施設・保育園・社員食堂。管理栄養士・栄養士・調理師・調理員の求人を、エリアと保有資格から探せます。</p>
       <div class="searchbox">
-        <div class="fld"><label>保有資格</label><select><option>すべての資格</option><option>管理栄養士</option><option>栄養士</option><option>調理師</option><option>調理員</option></select></div>
-        <div class="fld"><label>エリア</label><select><option>すべてのエリア</option><option>東京都</option><option>神奈川県</option><option>埼玉県</option><option>千葉県</option></select></div>
-        <div class="fld"><label>施設形態</label><select><option>すべての施設</option><option>病院・クリニック</option><option>高齢者施設</option><option>保育園</option><option>社員食堂</option></select></div>
-        <div class="fld"><label>こだわり</label><select><option>指定なし</option><option>日勤のみ</option><option>土日休み</option><option>ブランクOK</option></select></div>
-        <button class="btn lg" onclick="sgo('search')">絞り込む</button>
+        <div class="fld"><label>保有資格</label><select id="shokuQual"><option>すべての資格</option><option>管理栄養士</option><option>栄養士</option><option>調理師</option><option>調理員</option></select></div>
+        <div class="fld"><label>エリア</label><select id="shokuArea"><option>すべてのエリア</option><option>東京都</option><option>神奈川県</option><option>埼玉県</option><option>千葉県</option></select></div>
+        <div class="fld"><label>施設形態</label><select id="shokuFacil"><option>すべての施設</option><option>病院・クリニック</option><option>高齢者施設</option><option>保育園</option><option>社員食堂</option></select></div>
+        <div class="fld"><label>こだわり</label><select id="shokuCond"><option>指定なし</option><option>日勤のみ</option><option>土日休み</option><option>ブランクOK</option></select></div>
+        <button class="btn lg" onclick="goSearchFromShoku()">絞り込む</button>
       </div>
     </div>
     <div class="chips">
@@ -1921,12 +1921,93 @@ function wtab(el,id){
   var t=document.getElementById(id); if(t){t.classList.add('on');}
 }
 
-function sgo(p,el){
+/* ===== #43 対応: 職種選択→検索画面の二度手間解消 =====
+   トップの職種ブロック／職種トップ(shoku)の検索条件を carry として保持し、
+   画面遷移時（sgo）に検索画面(search)側の同じ項目へ引き継ぐ。
+   さらにURLクエリパラメータ（?page=search&job=...）にも反映することで、
+   看護roo!のような「条件込みURLへ直接遷移」を再現し、検索画面での再選択を無くす。
+   ※ URL設計（/kyushoku/tokyo/shinjuku/ 等）自体は変更せず、本デモの遷移実装のみを修正。 */
+var carry = {job:'', area:'', cond:'', facil:''};
+var CARRY_PLACEHOLDERS = ['すべての職種','すべてのエリア','すべての資格','すべての施設','指定なし'];
+
+function currentSel(id){
+  var el = document.getElementById(id);
+  if(!el) return '';
+  return CARRY_PLACEHOLDERS.indexOf(el.value) >= 0 ? '' : el.value;
+}
+function setSelectByText(id, text){
+  if(!text) return;
+  var el = document.getElementById(id); if(!el) return;
+  var has = Array.prototype.some.call(el.options, function(o){ return o.value===text; });
+  if(!has){ var o=document.createElement('option'); o.value=text; o.textContent=text; el.appendChild(o); }
+  el.value = text;
+}
+function highlightChip(scopeSel, text){
+  var wrap = document.querySelector(scopeSel);
+  if(!wrap || !text) return;
+  wrap.querySelectorAll('.chip').forEach(function(c){
+    c.classList.toggle('on', c.textContent.trim()===text);
+  });
+}
+function fillShokuForm(){
+  setSelectByText('shokuQual', carry.job);
+  setSelectByText('shokuArea', carry.area);
+  setSelectByText('shokuFacil', carry.facil);
+  setSelectByText('shokuCond', carry.cond);
+  highlightChip('#sp-shoku .chips', carry.job);
+}
+function fillSearchForm(){
+  setSelectByText('searchJob', carry.job);
+  setSelectByText('searchArea', carry.area);
+  setSelectByText('searchCond', carry.cond);
+  highlightChip('#sp-search .chips', carry.job);
+}
+function syncUrl(page){
+  try{
+    var qs = new URLSearchParams();
+    qs.set('page', page);
+    if(page==='shoku' || page==='search'){
+      if(carry.job) qs.set('job', carry.job);
+      if(carry.area) qs.set('area', carry.area);
+      if(carry.cond) qs.set('cond', carry.cond);
+      if(page==='shoku' && carry.facil) qs.set('facil', carry.facil);
+    }
+    history.replaceState(null, '', '?'+qs.toString());
+  }catch(e){ /* file://等でHistory APIが使えない環境では無視（表示自体には影響なし） */ }
+}
+
+function sgo(p,el,params){
   document.querySelectorAll('#world-site .page').forEach(s=>s.classList.remove('on'));
   document.getElementById('sp-'+p).classList.add('on');
   document.querySelectorAll('.site-nav a').forEach(a=>a.classList.toggle('on',a.dataset.sp===p));
   window.scrollTo(0,0);
+  if(params){
+    Object.keys(params).forEach(function(k){ if(params[k]) carry[k]=params[k]; });
+  }
+  if(p==='shoku') fillShokuForm();
+  if(p==='search') fillSearchForm();
+  syncUrl(p);
 }
+function goSearchFromTop(){
+  sgo('search', null, {job:currentSel('topJob'), area:currentSel('topArea'), cond:currentSel('topCond')});
+}
+function goSearchFromShoku(){
+  sgo('search', null, {job:currentSel('shokuQual'), area:currentSel('shokuArea'), facil:currentSel('shokuFacil'), cond:currentSel('shokuCond')});
+}
+function goSearchFromSearch(){
+  sgo('search', null, {job:currentSel('searchJob'), area:currentSel('searchArea'), cond:currentSel('searchCond')});
+}
+/* 直リンク／共有URL対応: ?page=search&job=保育士 のようなURLを開いた場合、その条件を復元して表示する */
+(function restoreFromUrl(){
+  var qs = new URLSearchParams(location.search);
+  var page = qs.get('page');
+  var hasCond = qs.get('job') || qs.get('area') || qs.get('cond') || qs.get('facil');
+  if(!page && !hasCond) return;
+  var target = page || 'search';
+  var params = {job:qs.get('job')||'', area:qs.get('area')||'', cond:qs.get('cond')||'', facil:qs.get('facil')||''};
+  var run = function(){ sgo(target, null, params); };
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', run); } else { run(); }
+})();
 function fgo(p,el){
   document.querySelectorAll('#world-sf .sf-page').forEach(s=>s.classList.remove('on'));
   document.getElementById('fp-'+p).classList.add('on');
